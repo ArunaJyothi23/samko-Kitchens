@@ -40,11 +40,23 @@ const newAuditData: AuditEntry[] = NEW_RESTAURANTS.flatMap((r, i) => [
   { id: `AUD-${r.code}-2`, timestamp: `2026-10-11 1${i % 3}:${String(20 + i * 3).padStart(2, '0')}:00`, user: r.managerName, userRole: 'Restaurant Manager', action: 'WASTAGE_APPROVED', module: 'Wastage', entity: 'WastageRecord', entityId: `W-${r.code.toLowerCase()}-1`, details: `Wastage approved at ${r.name}: Dosa Batter 600g — Expired Stock`, ipAddress: `192.168.${10 + i}.10`, severity: 'warning' as const, restaurant: r.name },
 ]);
 
-const allAuditData: AuditEntry[] = [...baseAuditData, ...newAuditData];
+const HOTEL_BY_LEGACY: Record<string, string> = {
+  Hounslow: 'Stanhill Hotel Limited',
+  Leicester: 'Stanhill Hotel Limited',
+  Reading: 'Warren House Hotel Limited',
+  Dartford: 'Warren House Hotel Limited',
+  'Central Kitchen': 'Kitchen (Both Hotels)',
+  All: 'Both Hotels',
+};
+
+const allAuditData: AuditEntry[] = [
+  ...baseAuditData.map((e) => ({ ...e, restaurant: HOTEL_BY_LEGACY[e.restaurant] ?? e.restaurant })),
+  ...newAuditData,
+];
 
 const modules = ['All', 'Inventory', 'EPOS Orders', 'Recipe Costing', 'Wastage', 'Dispatch', 'Goods Received', 'Users', 'Reports'];
 const severities = ['All', 'info', 'warning', 'critical'];
-const restaurants = ['All', 'Central Kitchen', 'Hounslow', 'Reading', 'Dartford', 'Leicester', ...NEW_RESTAURANT_NAMES];
+const restaurants = ['All', 'Kitchen (Both Hotels)', 'Both Hotels', ...NEW_RESTAURANT_NAMES];
 
 const severityConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
   info: { icon: <CheckCircle size={12} />, color: '#166534', bg: '#DCFCE7' },

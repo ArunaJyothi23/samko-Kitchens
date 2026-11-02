@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { FileText, Download, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useHydratedEposOrders } from '@/data/useHydratedEposOrders';
+import { useEposMaster } from '@/data/eposMasterStore';
+import { MENU_ITEMS, activeVersion, computeRecipeCost, foodCostPct } from '@/data/eposMaster';
 
 const salesByLocation = [
-  { location: 'Hounslow', sales: 4820.50, orders: 312 },
-  { location: 'Reading', sales: 3640.20, orders: 241 },
-  { location: 'Dartford', sales: 2980.75, orders: 198 },
-  { location: 'Leicester', sales: 3210.00, orders: 215 },
+  { location: 'Stanhill Hotel Limited', sales: 8030.5, orders: 527 },
+  { location: 'Warren House Hotel Limited', sales: 6620.95, orders: 439 },
 ];
 
 const wastageByReason = [
@@ -21,28 +22,19 @@ const wastageByReason = [
   { name: 'Other', value: 1.50, color: '#8B5CF6' },
 ];
 
-const topMenuItems = [
-  { item: 'Masala Dosa', qty: 48, sales: 383.52, foodCostPct: 6.3 },
-  { item: 'Idly', qty: 62, sales: 294.50, foodCostPct: 8.1 },
-  { item: 'Paneer Butter Masala', qty: 31, sales: 294.50, foodCostPct: 17.9 },
-  { item: 'Plain Dosa', qty: 35, sales: 244.65, foodCostPct: 6.5 },
-  { item: 'Vegetable Biryani', qty: 22, sales: 175.78, foodCostPct: 12.3 },
-  { item: 'Medhu Vada', qty: 28, sales: 154.00, foodCostPct: 8.3 },
-];
-
 const reports = [
-  { id: 'R-001', name: 'Ingredient Stock Ledger', category: 'Inventory', description: 'Full movement ledger for all ingredients across locations', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-002', name: 'Batch Stock Report', category: 'Inventory', description: 'Current batch quantities, costs and expiry status', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-003', name: 'Goods Received Report', category: 'Procurement', description: 'All GRNs with accepted/rejected quantities and costs', lastGenerated: '2026-10-10 23:00' },
-  { id: 'R-004', name: 'Production Batch Costing', category: 'Costing', description: 'Batch costs, yields and variances from central kitchen', lastGenerated: '2026-10-10 23:00' },
-  { id: 'R-005', name: 'Dispatch Report', category: 'Logistics', description: 'All dispatches with transit status and delivery confirmations', lastGenerated: '2026-10-10 23:00' },
-  { id: 'R-006', name: 'Restaurant Consumption Report', category: 'Operations', description: 'EPOS-driven ingredient consumption per restaurant', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-007', name: 'Menu Item Profitability', category: 'Costing', description: 'Selling price, ingredient cost, margin and food cost % per item', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-008', name: 'Wastage & Expiry Report', category: 'Operations', description: 'All wastage records with reasons, costs and approval status', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-009', name: 'Stocktake Variance Report', category: 'Inventory', description: 'Physical count vs system stock with variance analysis', lastGenerated: '2026-10-09 22:00' },
-  { id: 'R-010', name: 'EPOS Order Reconciliation', category: 'EPOS', description: 'All EPOS events matched to stock movements', lastGenerated: '2026-10-11 06:00' },
-  { id: 'R-011', name: 'Traceability & Recall Report', category: 'Traceability', description: 'Batch genealogy and affected order trace for any ingredient', lastGenerated: '2026-10-10 23:00' },
-  { id: 'R-012', name: 'Restaurant Comparison Report', category: 'Analytics', description: 'Side-by-side KPI comparison across all four restaurants', lastGenerated: '2026-10-11 06:00' },
+  { id: 'R-001', name: 'Menu Item Recipe Cost Report', category: 'Costing', description: 'Recipe cost, cost per serving, food cost % and gross profit for every EPOS item', lastGenerated: 'Live' },
+  { id: 'R-002', name: 'Ingredient Cost Report', category: 'Costing', description: 'Raw material master with purchase unit and latest cost', lastGenerated: 'Live' },
+  { id: 'R-003', name: 'Menu Item Profitability Report', category: 'Costing', description: 'Portions sold, sales, recipe cost, gross profit and food cost % per item', lastGenerated: 'Live' },
+  { id: 'R-004', name: 'Daily Food Cost Report', category: 'Costing', description: 'Daily EPOS sales versus theoretical recipe food cost', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-005', name: 'Monthly Food Cost Report', category: 'Costing', description: 'Monthly sales, theoretical food cost, wastage and gross profit', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-006', name: 'Ingredient Consumption Report', category: 'Operations', description: 'Theoretical consumption of each raw material from EPOS orders', lastGenerated: 'Live' },
+  { id: 'R-007', name: 'Raw Material Stock Report', category: 'Inventory', description: 'Current raw material stock, batches, cost and expiry status', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-008', name: 'Purchase History Report', category: 'Procurement', description: 'All purchase orders and GRNs with quantities and prices', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-009', name: 'Supplier-wise Purchase Report', category: 'Procurement', description: 'Purchase value and volume grouped by supplier', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-010', name: 'Wastage Report', category: 'Operations', description: 'Wastage records with reasons, financial cost and approval status', lastGenerated: '2026-10-31 06:00' },
+  { id: 'R-011', name: 'Stock Adjustment Report', category: 'Inventory', description: 'Stock adjustments, stocktake variances and write-offs', lastGenerated: '2026-10-30 22:00' },
+  { id: 'R-012', name: 'EPOS Order-wise Ingredient Consumption', category: 'EPOS', description: 'Ingredient consumption recorded against each EPOS order', lastGenerated: 'Live' },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -59,6 +51,58 @@ const categoryColors: Record<string, string> = {
 export default function ReportsAnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const liveOrders = useHydratedEposOrders();
+  const { state: master, materialOf, getRecipe } = useEposMaster();
+
+  const topMenuItems = React.useMemo(() => {
+    const map = new Map<string, { item: string; qty: number; sales: number; cost: number; costed: boolean }>();
+    liveOrders.filter((o) => o.status === 'completed' && !o.isDuplicate).forEach((o) => {
+      o.lines.forEach((l) => {
+        const cur = map.get(l.menuItem) ?? { item: l.menuItem, qty: 0, sales: 0, cost: 0, costed: true };
+        cur.qty += l.quantity;
+        cur.sales += l.totalPrice;
+        const c = l.consumption.reduce((s, x) => s + x.totalIngredientCost, 0);
+        if (l.recipeStatus !== 'mapped' || c <= 0) cur.costed = false;
+        cur.cost += c;
+        map.set(l.menuItem, cur);
+      });
+    });
+    return Array.from(map.values()).sort((a, b) => b.sales - a.sales).slice(0, 8);
+  }, [liveOrders]);
+
+  const download = (name: string, rows: (string | number)[][]) => {
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '-').toLowerCase()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportReport = (id: string, name: string) => {
+    if (id === 'R-001') {
+      download(name, [['Item', 'Category', 'Price', 'Recipe cost / serving', 'Food cost %', 'Gross profit'], ...MENU_ITEMS.map((m) => {
+        const c = computeRecipeCost(activeVersion(getRecipe(m.id)), materialOf);
+        return [m.name, m.category, m.price.toFixed(2), c.costPerServing.toFixed(2), c.costPerServing > 0 ? foodCostPct(c.costPerServing, m.price).toFixed(1) : '', c.costPerServing > 0 ? (m.price - c.costPerServing).toFixed(2) : ''];
+      })]);
+    } else if (id === 'R-002') {
+      download(name, [['SKU', 'Ingredient', 'Category', 'Unit', 'Cost per unit'], ...master.materials.map((m) => [m.sku, m.name, m.category, m.unit, m.unitCost.toFixed(4)])]);
+    } else if (id === 'R-003') {
+      download(name, [['Item', 'Portions sold', 'Sales', 'Recipe cost', 'Gross profit'], ...topMenuItems.map((t) => [t.item, t.qty, t.sales.toFixed(2), t.costed ? t.cost.toFixed(2) : '', t.costed ? (t.sales - t.cost).toFixed(2) : ''])]);
+    } else if (id === 'R-006') {
+      const agg = new Map<string, { unit: string; qty: number; cost: number }>();
+      liveOrders.filter((o) => o.status === 'completed' && !o.isDuplicate).forEach((o) => o.lines.forEach((l) => l.consumption.forEach((c) => {
+        const cur = agg.get(c.ingredientName) ?? { unit: c.unit, qty: 0, cost: 0 };
+        cur.qty += c.quantity; cur.cost += c.totalIngredientCost; agg.set(c.ingredientName, cur);
+      })));
+      download(name, [['Ingredient', 'Unit', 'Quantity consumed (theoretical)', 'Cost'], ...Array.from(agg.entries()).map(([k, v]) => [k, v.unit, v.qty.toFixed(3), v.cost.toFixed(2)])]);
+    } else if (id === 'R-012') {
+      download(name, [['Order', 'Restaurant', 'Item', 'Ingredient', 'Quantity', 'Unit', 'Cost'], ...liveOrders.filter((o) => o.status === 'completed' && !o.isDuplicate).flatMap((o) => o.lines.flatMap((l) => l.consumption.map((c) => [o.orderId, o.restaurant, l.menuItem, c.ingredientName, c.quantity, c.unit, c.totalIngredientCost.toFixed(2)])))]);
+    } else {
+      download(name, [['Report', name], ['Note', 'No transaction data is available yet for this period in the current session. Data appears here once purchase, GRN and stock activity is recorded.']]);
+    }
+  };
 
   const categories = ['All', ...Array.from(new Set(reports.map(r => r.category)))];
   const filteredReports = reports.filter(r => categoryFilter === 'All' || r.category === categoryFilter);
@@ -115,7 +159,7 @@ export default function ReportsAnalyticsPage() {
             </div>
             <div className="metric-card">
               <p className="label-text">Avg Food Cost %</p>
-              <p className="metric-value" style={{ color: '#166534' }}>9.6%</p>
+              <p className="metric-value" style={{ color: '#166534' }}>{(() => { const c = topMenuItems.filter((t) => t.costed && t.sales > 0); const s = c.reduce((a, t) => a + t.sales, 0); return s > 0 ? `${((c.reduce((a, t) => a + t.cost, 0) / s) * 100).toFixed(1)}%` : '—'; })()}</p>
             </div>
             <div className="metric-card-alert">
               <p className="label-text">Total Wastage Cost</p>
@@ -175,7 +219,7 @@ export default function ReportsAnalyticsPage() {
                       <td style={{ fontSize: 13, fontWeight: 500 }}>{item.item}</td>
                       <td style={{ fontSize: 12 }}>{item.qty}</td>
                       <td style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>£{item.sales.toFixed(2)}</td>
-                      <td style={{ fontSize: 12, fontWeight: 600, color: item.foodCostPct > 15 ? '#991B1B' : '#166534' }}>{item.foodCostPct}%</td>
+                      <td style={{ fontSize: 12, fontWeight: 600, color: item.costed && item.sales > 0 && (item.cost / item.sales) * 100 > 35 ? '#991B1B' : '#166534' }}>{item.costed && item.sales > 0 ? `${((item.cost / item.sales) * 100).toFixed(1)}%` : 'Recipe pending'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,7 +269,7 @@ export default function ReportsAnalyticsPage() {
                   <button className="btn-primary flex-1" style={{ padding: '7px', fontSize: 12 }}>
                     <FileText size={12} /> Generate
                   </button>
-                  <button className="btn-secondary" style={{ padding: '7px 12px', fontSize: 12 }}>
+                  <button className="btn-secondary" style={{ padding: '7px 12px', fontSize: 12 }} onClick={() => exportReport(report.id, report.name)}>
                     <Download size={12} /> CSV
                   </button>
                 </div>

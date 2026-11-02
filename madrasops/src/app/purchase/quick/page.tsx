@@ -17,9 +17,9 @@ interface QuickLine {
 
 export default function QuickPurchasePage() {
   const router = useRouter();
-  const { user, lockedRestaurant } = useAuth();
+  const { user, activeScope, readOnly } = useAuth();
   const { createQuickPurchase } = usePurchaseStore();
-  const restaurant = lockedRestaurant ?? 'Hounslow';
+  const restaurant = activeScope ?? 'Stanhill Hotel Limited';
 
   const [lines, setLines] = useState<QuickLine[]>([]);
   const [payment, setPayment] = useState<'Cash' | 'Card'>('Cash');
@@ -32,6 +32,10 @@ export default function QuickPurchasePage() {
     setLines((prev) => prev.map((l) => (l.item.sku === sku ? { ...l, ...patch } : l)));
 
   const submit = () => {
+    if (readOnly) {
+      toast.error('Finance / Auditor accounts are read-only and cannot record purchases.');
+      return;
+    }
     const e: Record<string, string> = {};
     if (lines.length === 0) e.lines = 'Add at least one item';
     lines.forEach((l) => {

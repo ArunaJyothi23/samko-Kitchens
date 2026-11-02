@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { Search, RotateCcw } from 'lucide-react';
+import { Search, RotateCcw, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAuth, useScopedRestaurant, matchesScope } from '@/contexts/AuthContext';
 import { usePurchaseStore, PurchaseOrder, formatDate, formatDateTime, SUPPLIERS } from '@/app/purchase/components/purchaseStore';
@@ -25,6 +26,7 @@ export default function VendorOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<'All' | CommStatus>('All');
   const [vendorFilter, setVendorFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState<'All' | IntegrationType>('All');
+  const [restaurantFilter, setRestaurantFilter] = useState('All');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -45,12 +47,15 @@ export default function VendorOrdersPage() {
         (statusFilter === 'All' || c.status === statusFilter) &&
         (vendorFilter === 'All' || o.vendor === vendorFilter) &&
         (typeFilter === 'All' || v?.integrationType === typeFilter) &&
+        (restaurantFilter === 'All' || o.restaurant === restaurantFilter) &&
         (!from || day >= from) &&
         (!to || day <= to) &&
         (!q || `${o.poNumber} ${o.vendor} ${o.restaurant}`.toLowerCase().includes(q))
       );
     });
-  }, [scoped, vc.comms, vc.vendors, search, statusFilter, vendorFilter, typeFilter, from, to]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scoped, vc.comms, vc.vendors, search, statusFilter, vendorFilter, typeFilter, restaurantFilter, from, to]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const restaurantOptions = useMemo(() => Array.from(new Set(scoped.map((o) => o.restaurant))).sort(), [scoped]);
 
   const selected: PurchaseOrder | undefined = scoped.find((o) => o.id === selectedId);
 
@@ -137,6 +142,27 @@ export default function VendorOrdersPage() {
             </table>
           </div>
           <p style={{ fontSize: 11, color: 'var(--muted-foreground)', marginTop: 8 }}>Use the Purchase Orders tab to filter by vendor, restaurant, date, status and integration type.</p>
+          <div className="card p-0 overflow-hidden mt-6">
+            <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}><h3 style={{ fontSize: 14, fontWeight: 600 }}>Integrations requiring attention</h3></div>
+            <table className="data-table">
+              <thead><tr><th>Vendor</th><th>Type</th><th>Status</th><th>Last success</th><th>Last error</th><th></th></tr></thead>
+              <tbody>
+                {vc.vendors.filter((v) => v.integrationStatus === 'Needs Attention').length === 0 && (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', fontSize: 12, color: 'var(--muted-foreground)' }}>All configured integrations are healthy.</td></tr>
+                )}
+                {vc.vendors.filter((v) => v.integrationStatus === 'Needs Attention').map((v) => (
+                  <tr key={v.name}>
+                    <td style={{ fontSize: 12.5, fontWeight: 600 }}>{v.name}</td>
+                    <td style={{ fontSize: 12 }}>{v.integrationType}</td>
+                    <td style={{ fontSize: 12, fontWeight: 700, color: '#991B1B' }}>{v.integrationStatus}</td>
+                    <td style={{ fontSize: 12 }}>{v.lastSuccess ? formatDateTime(v.lastSuccess) : '—'}</td>
+                    <td style={{ fontSize: 12, color: '#991B1B' }}>{v.lastError || '—'}</td>
+                    <td><button className="btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => { editVendor(v.name, { integrationStatus: 'Active', lastError: '' }); }}>Mark resolved</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
 
@@ -161,6 +187,13 @@ export default function VendorOrdersPage() {
             </select>
             <input type="date" className="input-field" style={{ width: 140 }} value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
             <input type="date" className="input-field" style={{ width: 140 }} value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+            {!scope && (
+              <select className="input-field" style={{ width: 170 }} value={restaurantFilter} onChange={(e) => setRestaurantFilter(e.target.value)} aria-label="Restaurant">
+                <option value="All">Both hotels</option>
+                {restaurantOptions.map((r) => <option key={r}>{r}</option>)}
+              </select>
+            )}
+            <Link href="/purchase/create" className="btn-primary ml-auto" style={{ textDecoration: 'none' }}><Plus size={14} /> Create &amp; manage PO</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="data-table">
@@ -234,6 +267,7 @@ export default function VendorOrdersPage() {
           onClose={() => setSelectedId(null)}
           onSend={() => handleSend(selected)}
           onCancel={() => { vc.cancelPo(selected.poNumber, actor); toast.success('PO marked cancelled in vendor comms'); }}
+          onAmend={(note) => vc.amendPo(selected.poNumber, actor, note)}
           onRecord={(input) => vc.recordResponse(selected.poNumber, actor, input)}
           onReview={(id, decision) => { vc.reviewChange(selected.poNumber, id, decision, actor); toast.success(`Change ${decision.toLowerCase()}`); }}
         />

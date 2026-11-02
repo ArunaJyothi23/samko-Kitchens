@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { RAW_CATEGORIES, RAW_MATERIALS } from '@/data/eposMaster';
 
 export type PurchaseSource = 'Central Kitchen' | 'KTC Wholesale' | 'Spice Route Foods' | 'Fresh Fields Produce' | 'Dairy Direct UK' | 'Local Cash & Carry';
 
@@ -21,28 +22,15 @@ export interface CatalogueItem {
   unitCost: number;
 }
 
-export const CATEGORIES = ['Batters', 'Masalas', 'Chutneys', 'Gravies', 'Dairy', 'Vegetables', 'Grains', 'Dry Goods', 'Packaging'];
+export const CATEGORIES = RAW_CATEGORIES;
 
-export const CATALOGUE: CatalogueItem[] = [
-  { sku: 'MF-DB-001', name: 'Dosa Batter', category: 'Batters', unit: 'kg', unitCost: 1.0 },
-  { sku: 'MF-IB-001', name: 'Idly Batter', category: 'Batters', unit: 'kg', unitCost: 0.95 },
-  { sku: 'MF-VB-001', name: 'Vada Batter', category: 'Batters', unit: 'kg', unitCost: 1.1 },
-  { sku: 'MF-PM-001', name: 'Potato Masala', category: 'Masalas', unit: 'kg', unitCost: 1.2 },
-  { sku: 'MF-RC-001', name: 'Red Chutney', category: 'Chutneys', unit: 'kg', unitCost: 10.0 },
-  { sku: 'MF-WC-001', name: 'White Chutney', category: 'Chutneys', unit: 'kg', unitCost: 10.0 },
-  { sku: 'MF-SB-001', name: 'Sambar', category: 'Gravies', unit: 'L', unitCost: 5.0 },
-  { sku: 'MF-CB-001', name: 'Curry Base', category: 'Gravies', unit: 'kg', unitCost: 3.2 },
-  { sku: 'MF-PN-001', name: 'Paneer', category: 'Dairy', unit: 'kg', unitCost: 8.5 },
-  { sku: 'MF-GH-001', name: 'Ghee', category: 'Dairy', unit: 'kg', unitCost: 12.0 },
-  { sku: 'MF-MV-001', name: 'Mixed Vegetables', category: 'Vegetables', unit: 'kg', unitCost: 2.5 },
-  { sku: 'MF-CO-001', name: 'Coriander', category: 'Vegetables', unit: 'bunch', unitCost: 0.8 },
-  { sku: 'MF-ON-001', name: 'Onions', category: 'Vegetables', unit: 'kg', unitCost: 0.9 },
-  { sku: 'MF-CR-001', name: 'Cooked Rice', category: 'Grains', unit: 'kg', unitCost: 1.8 },
-  { sku: 'MF-BR-001', name: 'Basmati Rice', category: 'Grains', unit: 'kg', unitCost: 2.2 },
-  { sku: 'MF-TD-001', name: 'Toor Dal', category: 'Dry Goods', unit: 'kg', unitCost: 2.9 },
-  { sku: 'MF-SO-001', name: 'Sunflower Oil', category: 'Dry Goods', unit: 'L', unitCost: 1.7 },
-  { sku: 'MF-PK-001', name: 'Takeaway Containers', category: 'Packaging', unit: 'pack', unitCost: 6.5 },
-];
+export const CATALOGUE: CatalogueItem[] = RAW_MATERIALS.map((r) => ({
+  sku: r.sku,
+  name: r.name,
+  category: r.category,
+  unit: r.unit,
+  unitCost: r.unitCost,
+}));
 
 export interface OrderLine {
   sku: string;

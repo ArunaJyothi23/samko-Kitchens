@@ -15,6 +15,7 @@ interface Props {
   onClose: () => void;
   onSend: () => void;
   onCancel: () => void;
+  onAmend: (note: string) => void;
   onRecord: (input: {
     outcome: 'Acknowledged' | 'Confirmed' | 'Partially Confirmed' | 'Rejected';
     externalRef: string;
@@ -31,7 +32,7 @@ export function CommBadge({ status }: { status: CommStatus }) {
   return <span style={{ background: st.bg, color: st.fg, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap' }}>{status}</span>;
 }
 
-export default function VendorPoPanel({ order, comm, vendor, actor, canManage, onClose, onSend, onCancel, onRecord, onReview }: Props) {
+export default function VendorPoPanel({ order, comm, vendor, actor, canManage, onClose, onSend, onCancel, onAmend, onRecord, onReview }: Props) {
   const [showResponse, setShowResponse] = useState(false);
   const [outcome, setOutcome] = useState<'Acknowledged' | 'Confirmed' | 'Partially Confirmed' | 'Rejected'>('Confirmed');
   const [extRef, setExtRef] = useState('');

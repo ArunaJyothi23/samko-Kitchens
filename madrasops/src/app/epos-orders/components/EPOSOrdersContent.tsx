@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Search, RefreshCw, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
-import { eposOrders as allEposOrders, EPOSOrder } from './eposData';
+import { EPOSOrder } from './eposData';
+import { useHydratedEposOrders } from '@/data/useHydratedEposOrders';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EPOSOrderDetailPanel from './EPOSOrderDetailPanel';
 import EPOSLiveStream from './EPOSLiveStream';
@@ -17,11 +18,12 @@ const statusMap: Record<string, any> = {
 };
 
 const statusOptions = ['All', 'completed', 'processing', 'failed', 'cancelled'];
-const restaurantOptions = ['All', 'Hounslow', 'Reading', 'Dartford', 'Leicester', ...NEW_RESTAURANT_NAMES];
+const restaurantOptions = ['All', ...NEW_RESTAURANT_NAMES];
 
 export default function EPOSOrdersContent() {
   const scope = useScopedRestaurant();
-  const eposOrders = allEposOrders.filter((o) => matchesScope(scope, o.restaurant));
+  const hydratedOrders = useHydratedEposOrders();
+  const eposOrders = hydratedOrders.filter((o) => matchesScope(scope, o.restaurant));
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [restaurantFilter, setRestaurantFilter] = useState('All');
@@ -43,7 +45,7 @@ export default function EPOSOrdersContent() {
   const summaryStats = [
     { id: 'epos-sum-1', label: "Today\'s Orders", value: eposOrders.length.toString(), color: 'var(--foreground)' },
     { id: 'epos-sum-2', label: 'Total Sales', value: `£${eposOrders.reduce((s, o) => s + o.totalSelling, 0).toFixed(2)}`, color: '#166534' },
-    { id: 'epos-sum-3', label: 'Avg Food Cost %', value: `${(eposOrders.filter(o => o.foodCostPct > 0).reduce((s, o) => s + o.foodCostPct, 0) / eposOrders.filter(o => o.foodCostPct > 0).length).toFixed(1)}%`, color: 'var(--foreground)' },
+    { id: 'epos-sum-3', label: 'Avg Food Cost %', value: eposOrders.filter(o => o.foodCostPct > 0).length ? `${(eposOrders.filter(o => o.foodCostPct > 0).reduce((s, o) => s + o.foodCostPct, 0) / eposOrders.filter(o => o.foodCostPct > 0).length).toFixed(1)}%` : '—', color: 'var(--foreground)' },
     { id: 'epos-sum-4', label: 'Unmapped Items', value: eposOrders.filter(o => o.lines.some(l => l.recipeStatus === 'unmapped')).length.toString(), color: '#991B1B' },
     { id: 'epos-sum-5', label: 'Duplicate Events Blocked', value: eposOrders.filter(o => o.isDuplicate).length.toString(), color: '#5B21B6' },
   ];
@@ -56,7 +58,7 @@ export default function EPOSOrdersContent() {
           <div className="flex items-center gap-2 mt-1">
             <span className="live-pulse" />
             <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)' }}>
-              Live · {eposOrders.length} orders today · FEFO batch allocation active
+              Live · {eposOrders.length} orders today · recipe-based stock consumption (approved recipes only)
             </p>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function EPOSOrdersContent() {
                               {order.lines.map((l) => (
                                 <div key={l.id} className="flex items-center gap-1.5">
                                   <span style={{ fontSize: 12.5, color: 'var(--foreground)' }}>
-                                    {l.menuItem} ×{l.quantity}
+                                    {l.menuItem} ×{l.quantity}{l.modifiers && l.modifiers.length > 0 ? ` (${l.modifiers.join(', ')})` : ''}
                                   </span>
                                   {l.recipeStatus === 'unmapped' && (
                                     <span title="No recipe mapped — stock not deducted">

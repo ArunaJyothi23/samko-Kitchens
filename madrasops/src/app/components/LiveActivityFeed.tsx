@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, FlaskConical, Truck, AlertTriangle, Package } from 'lucide-react';
-import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
+import { useScopedRestaurant, NEW_RESTAURANTS, toHotel, rewriteLegacyText } from '@/contexts/AuthContext';
 
 const baseEvents = [
   {
@@ -10,9 +10,9 @@ const baseEvents = [
     restaurant: 'Hounslow',
     type: 'epos',
     icon: <ShoppingCart size={13} />,
-    title: 'Order #MF-HOU-10482',
-    detail: 'Masala Dosa × 1 · Hounslow',
-    sub: 'Dosa batter −100g · Sambar −20g',
+    title: 'Order #SK-HOU-10482',
+    detail: 'Chicken Burger × 2, Caesar Salad (Add Chicken) · Hounslow',
+    sub: 'Consumption posted from approved recipes',
     time: '06:17',
     color: 'var(--primary)',
     bg: '#FEE2E2',
@@ -23,7 +23,7 @@ const baseEvents = [
     type: 'production',
     icon: <FlaskConical size={13} />,
     title: 'Batch PB-2024-0112 completed',
-    detail: 'Idly batter · 48.4 kg · Yield 96.8%',
+    detail: 'Tomato basil soup base · 48.4 kg · Yield 96.8%',
     sub: 'Central Kitchen',
     time: '06:14',
     color: '#1E40AF',
@@ -46,9 +46,9 @@ const baseEvents = [
     restaurant: 'Hounslow',
     type: 'epos',
     icon: <ShoppingCart size={13} />,
-    title: 'Order #MF-HOU-10481',
-    detail: 'Plain Dosa × 2 · Hounslow',
-    sub: 'Dosa batter −240g · Sambar −60g',
+    title: 'Order #SK-HOU-10481',
+    detail: 'BLT (Brown Bread) × 2, Latte × 2 · Hounslow',
+    sub: 'Brown bread, bacon, coffee beans deducted',
     time: '06:08',
     color: 'var(--primary)',
     bg: '#FEE2E2',
@@ -59,8 +59,8 @@ const baseEvents = [
     type: 'alert',
     icon: <AlertTriangle size={13} />,
     title: 'Low stock alert',
-    detail: 'Dosa batter · Hounslow · 1.2 kg',
-    sub: 'Below reorder point (3 kg)',
+    detail: 'Cheddar cheese · Hounslow · 1.8 kg',
+    sub: 'Below minimum stock (3 kg)',
     time: '06:05',
     color: '#92400E',
     bg: '#FEF3C7',
@@ -70,9 +70,9 @@ const baseEvents = [
     restaurant: 'Reading',
     type: 'epos',
     icon: <ShoppingCart size={13} />,
-    title: 'Order #MF-REA-8821',
-    detail: 'Idly × 2, Veg Biryani × 1 · Reading',
-    sub: 'Idly batter −320g · Biryani rice −250g',
+    title: 'Order #SK-REA-8821',
+    detail: 'Pepperoni Pizza (Add Chicken), Pasta Carbonara · Reading',
+    sub: 'Pizza base, pepperoni, extra chicken, linguine deducted',
     time: '06:02',
     color: 'var(--primary)',
     bg: '#FEE2E2',
@@ -83,8 +83,8 @@ const baseEvents = [
     type: 'stock',
     icon: <Package size={13} />,
     title: 'Wastage recorded',
-    detail: 'White chutney 0.2 kg · Dartford',
-    sub: 'Reason: Spillage · Approved',
+    detail: 'Cos lettuce 0.5 kg · Dartford',
+    sub: 'Reason: Expired stock · Approved',
     time: '05:58',
     color: '#5B21B6',
     bg: '#EDE9FE',
@@ -94,9 +94,9 @@ const baseEvents = [
     restaurant: 'Dartford',
     type: 'epos',
     icon: <ShoppingCart size={13} />,
-    title: 'Order #MF-DAR-6102',
-    detail: 'Ghee Masala Dosa × 1 · Dartford',
-    sub: 'Dosa batter −100g · Ghee −8g',
+    title: 'Order #SK-DAR-6102',
+    detail: 'Ribeye Steak, Chunky Chips · Dartford',
+    sub: 'Beef steak, potatoes, cooking oil deducted',
     time: '05:54',
     color: 'var(--primary)',
     bg: '#FEE2E2',
@@ -109,9 +109,9 @@ const newRestaurantEvents = NEW_RESTAURANTS.flatMap((r, i) => [
     restaurant: r.name as string,
     type: 'epos',
     icon: <ShoppingCart size={13} />,
-    title: `Order #MF-${r.code}-${4100 + i * 37}`,
-    detail: `Masala Dosa × ${1 + (i % 3)} · ${r.name}`,
-    sub: 'Dosa batter −100g · Sambar −20g',
+    title: `Order #SK-${r.code}-${4100 + i * 37}`,
+    detail: `Caesar Salad × ${1 + (i % 3)} · ${r.name}`,
+    sub: 'Cos lettuce, parmesan, croûtes deducted',
     time: `06:${String(10 + i).padStart(2, '0')}`,
     color: 'var(--primary)',
     bg: '#FEE2E2',
@@ -130,7 +130,13 @@ const newRestaurantEvents = NEW_RESTAURANTS.flatMap((r, i) => [
   },
 ]);
 
-const initialEvents = [...baseEvents, ...newRestaurantEvents];
+const initialEvents = [...baseEvents, ...newRestaurantEvents].map((e) => ({
+  ...e,
+  restaurant: e.restaurant === 'Central Kitchen' ? 'Kitchen (Both Hotels)' : toHotel(e.restaurant),
+  title: rewriteLegacyText(e.title),
+  detail: rewriteLegacyText(e.detail),
+  sub: e.sub === 'Central Kitchen' ? 'Kitchen' : e.sub,
+}));
 
 export default function LiveActivityFeed() {
   const scope = useScopedRestaurant();

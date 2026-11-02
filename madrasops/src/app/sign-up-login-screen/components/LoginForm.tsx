@@ -5,20 +5,47 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, LogIn, Copy, Check, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { demoAccounts, useAuth, NEW_RESTAURANT_NAMES } from '@/contexts/AuthContext';
+import { demoAccounts, useAuth } from '@/contexts/AuthContext';
 
 interface LoginFormValues {
   email: string;
   password: string;
+  confirmPassword: string;
   rememberMe: boolean;
+}
+
+const PASSWORD_STORE_KEY = 'madrasops-credentials';
+
+async function hashPassword(email: string, password: string): Promise<string> {
+  const data = new TextEncoder().encode(`${email.toLowerCase()}::${password}`);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function readCredentialStore(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(PASSWORD_STORE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCredentialStore(store: Record<string, string>) {
+  try {
+    localStorage.setItem(PASSWORD_STORE_KEY, JSON.stringify(store));
+  } catch {
+    // storage unavailable
+  }
 }
 
 const demoCredentials = demoAccounts.map((a) => ({
   id: a.id,
-  role: a.restaurant ? `${a.restaurant} Manager` : a.role,
-  subtitle: a.restaurant ? `${NEW_RESTAURANT_NAMES.includes(a.restaurant) ? a.restaurant : `Samko ${a.restaurant}`} only` : a.isCentralKitchen ? 'Central Kitchen' : 'All locations',
+  role: a.role,
+  subtitle: a.restaurant ? `${a.restaurant} only` : a.readOnly ? 'Both hotels · Read-only' : 'Both hotels',
   email: a.email,
-  password: a.password,
   color: a.color,
 }));
 
@@ -29,14 +56,16 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [loginError, setLoginError] = useState('');
+  const [setupMode, setSetupMode] = useState<'login' | 'create' | 'reset'>('login');
 
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<LoginFormValues>({
-    defaultValues: { email: '', password: '', rememberMe: false },
+    defaultValues: { email: '', password: '', confirmPassword: '', rememberMe: false },
   });
 
   const handleCopy = async (text: string, fieldId: string) => {
@@ -45,33 +74,83 @@ export default function LoginForm() {
     setTimeout(() => setCopiedField(null), 1500);
   };
 
-  const handleUseCredential = (cred: (typeof demoCredentials)[0]) => {
-    setValue('email', cred.email);
-    setValue('password', cred.password);
-    setLoginError('');
+  const detectMode = (email: string) => {
+    const account = demoAccounts.find((a) => a.email.toLowerCase() === email.trim().toLowerCase());
+    if (!account) {
+      setSetupMode('login');
+      return;
+    }
+    const store = readCredentialStore();
+    setSetupMode(store[account.email.toLowerCase()] ? 'login' : 'create');
   };
 
-  // Backend integration point: replace with real auth API call
+  const handleUseCredential = (cred: (typeof demoCredentials)[0]) => {
+    setValue('email', cred.email);
+    setValue('password', '');
+    setValue('confirmPassword', '');
+    setLoginError('');
+    detectMode(cred.email);
+  };
+
+  const handleForgotPassword = () => {
+    const email = getValues('email').trim().toLowerCase();
+    const account = demoAccounts.find((a) => a.email.toLowerCase() === email);
+    if (!account) {
+      setLoginError('Enter your authorised email address first, then click "Forgot password?".');
+      return;
+    }
+    setLoginError('');
+    setValue('password', '');
+    setValue('confirmPassword', '');
+    setSetupMode('reset');
+    toast.info('Choose a new password for this account.');
+  };
+
+  // Backend integration point: replace with real auth API call. Passwords are stored only as a SHA-256 hash in this browser.
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setLoginError('');
-    await new Promise((r) => setTimeout(r, 1000));
 
-    const valid = demoCredentials.find(
-      (c) => c.email === data.email && c.password === data.password
-    );
+    const emailKey = data.email.trim().toLowerCase();
+    const account = demoAccounts.find((a) => a.email.toLowerCase() === emailKey);
 
-    if (valid) {
-      const account = demoAccounts.find((a) => a.id === valid.id);
-      if (account) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...sessionUser } = account;
-        login(sessionUser);
+    if (!account) {
+      setLoginError('This email is not an authorised account. Contact your administrator.');
+      setIsLoading(false);
+      return;
+    }
+
+    const store = readCredentialStore();
+    const hasPassword = !!store[emailKey];
+    const mode = setupMode === 'reset' ? 'reset' : hasPassword ? 'login' : 'create';
+
+    if (mode === 'create' || mode === 'reset') {
+      if (data.password.length < 6) {
+        setLoginError('Password must be at least 6 characters.');
+        setIsLoading(false);
+        return;
       }
-      toast.success(`Welcome back! Signed in as ${valid.role}`);
+      if (data.password !== data.confirmPassword) {
+        setLoginError('Passwords do not match.');
+        setIsLoading(false);
+        return;
+      }
+      store[emailKey] = await hashPassword(emailKey, data.password);
+      writeCredentialStore(store);
+      login(account);
+      toast.success(`Password saved. Signed in as ${account.role}`);
+      setTimeout(() => router.push('/'), 500);
+      setIsLoading(false);
+      return;
+    }
+
+    const hash = await hashPassword(emailKey, data.password);
+    if (store[emailKey] === hash) {
+      login(account);
+      toast.success(`Welcome back! Signed in as ${account.role}`);
       setTimeout(() => router.push('/'), 500);
     } else {
-      setLoginError('Invalid credentials — use the demo accounts below to sign in.');
+      setLoginError('Incorrect password. Use "Forgot password?" to set a new one.');
     }
     setIsLoading(false);
   };
@@ -120,6 +199,7 @@ export default function LoginForm() {
               {...register('email', {
                 required: 'Email is required',
                 pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email address' },
+                onBlur: (e) => detectMode(e.target.value),
               })}
             />
             {errors.email && (
@@ -142,17 +222,24 @@ export default function LoginForm() {
               <span
                 className="text-xs cursor-pointer"
                 style={{ color: 'var(--primary)', fontSize: 12 }}
+                onClick={handleForgotPassword}
+                role="button"
               >
                 Forgot password?
               </span>
             </div>
+            {setupMode !== 'login' && (
+              <p className="mb-1.5" style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>
+                {setupMode === 'create' ?'First sign-in: create a password for this account.' :'Enter a new password for this account.'}
+              </p>
+            )}
             <div className="relative">
               <input
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 className="input-field pr-10"
-                placeholder="Enter your password"
+                placeholder={setupMode === 'login' ? 'Enter your password' : 'Create a password (min 6 characters)'}
                 {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } })}
               />
               <button
@@ -171,6 +258,26 @@ export default function LoginForm() {
               </p>
             )}
           </div>
+
+          {setupMode !== 'login' && (
+            <div>
+              <label
+                htmlFor="login-confirm-password"
+                className="label-text block mb-1.5"
+                style={{ fontSize: 13, fontWeight: 500 }}
+              >
+                Confirm password
+              </label>
+              <input
+                id="login-confirm-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                className="input-field"
+                placeholder="Re-enter your password"
+                {...register('confirmPassword')}
+              />
+            </div>
+          )}
 
           {/* Remember me */}
           <div className="flex items-center gap-2">
@@ -192,7 +299,7 @@ export default function LoginForm() {
               className="flex items-start gap-2 rounded-lg p-3"
               style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
             >
-              <AlertCircle size={15} style={{ color: 'var(--primary)', marginTop: 1, shrink: 0 }} />
+              <AlertCircle size={15} style={{ color: 'var(--primary)', marginTop: 1, flexShrink: 0 }} />
               <p style={{ fontSize: 13, color: '#991B1B', lineHeight: 1.4 }}>{loginError}</p>
             </div>
           )}
@@ -215,7 +322,7 @@ export default function LoginForm() {
             ) : (
               <>
                 <LogIn size={16} />
-                Sign in
+                {setupMode === 'login' ? 'Sign in' : 'Save password & sign in'}
               </>
             )}
           </button>
@@ -231,7 +338,7 @@ export default function LoginForm() {
             style={{ background: 'var(--muted)', borderBottom: '1px solid var(--border)' }}
           >
             <span className="font-semibold" style={{ fontSize: 12, color: 'var(--muted-foreground)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Demo Accounts
+              Authorised Accounts
             </span>
             <span
               className="demo-badge"
@@ -260,7 +367,7 @@ export default function LoginForm() {
                     {cred.role}
                   </div>
                   <div className="truncate" style={{ fontSize: 11.5, color: 'var(--muted-foreground)' }}>
-                    {cred.email}
+                    {cred.email} · {cred.subtitle}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">

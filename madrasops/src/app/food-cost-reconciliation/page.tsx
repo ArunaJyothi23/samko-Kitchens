@@ -15,7 +15,7 @@ type Method = 'recipe' | 'stock';
 
 export default function FoodCostReconciliationPage() {
   const scope = useScopedRestaurant();
-  const [location, setLocation] = useState<string>('Hounslow');
+  const [location, setLocation] = useState<string>(ALL_LOCATIONS[0]);
   const [rangeKey, setRangeKey] = useState<RangeKey>('thisMonth');
   const [customFrom, setCustomFrom] = useState('2026-10-01');
   const [customTo, setCustomTo] = useState(DEMO_TODAY);

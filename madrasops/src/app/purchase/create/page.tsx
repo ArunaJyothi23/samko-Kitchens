@@ -23,9 +23,9 @@ function addDays(iso: string, days: number) {
 
 export default function CreateOrderPage() {
   const router = useRouter();
-  const { user, lockedRestaurant } = useAuth();
+  const { user, activeScope, readOnly } = useAuth();
   const { createOrder } = usePurchaseStore();
-  const restaurant = lockedRestaurant ?? 'Hounslow';
+  const restaurant = activeScope ?? 'Stanhill Hotel Limited';
 
   const [vendor, setVendor] = useState(SUPPLIERS[0]);
   const [invoiceNo, setInvoiceNo] = useState('');
@@ -43,6 +43,10 @@ export default function CreateOrderPage() {
   const removeLine = (sku: string) => setLines((prev) => prev.filter((l) => l.item.sku !== sku));
 
   const submit = () => {
+    if (readOnly) {
+      toast.error('Finance / Auditor accounts are read-only and cannot create purchase orders.');
+      return;
+    }
     const e: Record<string, string> = {};
     if (!vendor) e.vendor = 'Select a vendor';
     if (!invoiceNo.trim()) e.invoiceNo = 'Invoice number is required';

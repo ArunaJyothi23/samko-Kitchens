@@ -1,3 +1,5 @@
+import { rewriteLegacyDeep } from '@/contexts/AuthContext';
+
 export interface ProductionBatch {
   id: string;
   batchId: string;
@@ -19,7 +21,7 @@ export interface ProductionBatch {
   notes: string;
 }
 
-export const productionBatches: ProductionBatch[] = [
+export const productionBatches: ProductionBatch[] = rewriteLegacyDeep<ProductionBatch[]>([
   {
     id: 'pb-001',
     batchId: 'PB-2024-0112',
@@ -329,4 +331,4 @@ export const productionBatches: ProductionBatch[] = [
       { id: 'ing-pb012-004', name: 'Chana Masala Powder', planned: 1.2, actual: 0, unit: 'kg', cost: 7.20 },
     ],
   },
-];
+]);

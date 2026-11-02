@@ -5,29 +5,22 @@ import { ShoppingCart, CheckCircle, AlertTriangle, XCircle, ShieldCheck, Zap } f
 import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
 
 const codeByRestaurant: Record<string, string> = {
-  Hounslow: 'HOU',
-  Reading: 'REA',
-  Dartford: 'DAR',
-  Leicester: 'LEI',
   ...Object.fromEntries(NEW_RESTAURANTS.map((r) => [r.name, r.code])),
 };
 
 const baseStream = [
-  { id: 'stream-001', type: 'order', icon: <ShoppingCart size={12} />, title: 'MF-HOU-10482 received', detail: 'Masala Dosa × 1', sub: 'Webhook wh_evt_a1b2c3d4', time: '06:17:32', color: 'var(--primary)', bg: '#FEE2E2' },
-  { id: 'stream-002', type: 'fefo', icon: <CheckCircle size={12} />, title: 'FEFO allocation: Dosa Batter', detail: '100g from PB-2024-0111 (exp 13/10)', sub: 'Earliest eligible batch', time: '06:17:33', color: '#166534', bg: '#DCFCE7' },
-  { id: 'stream-003', type: 'fefo', icon: <CheckCircle size={12} />, title: 'FEFO allocation: Red Chutney', detail: '10g from PB-2024-0109 (exp 12/10)', sub: 'Earliest eligible batch', time: '06:17:33', color: '#166534', bg: '#DCFCE7' },
-  { id: 'stream-004', type: 'complete', icon: <Zap size={12} />, title: 'MF-HOU-10482 complete', detail: 'Total cost: £0.381 · Food cost: 4.77%', sub: 'Stock ledger updated', time: '06:17:34', color: '#1E40AF', bg: '#DBEAFE' },
-  { id: 'stream-005', type: 'order', icon: <ShoppingCart size={12} />, title: 'MF-HOU-10481 received', detail: 'Plain Dosa × 2', sub: 'Webhook wh_evt_b2c3d4e5', time: '06:08:14', color: 'var(--primary)', bg: '#FEE2E2' },
-  { id: 'stream-006', type: 'fefo', icon: <CheckCircle size={12} />, title: 'FEFO allocation: Dosa Batter', detail: '240g from PB-2024-0111 (exp 13/10)', sub: '2 portions allocated', time: '06:08:15', color: '#166534', bg: '#DCFCE7' },
-  { id: 'stream-007', type: 'alert', icon: <AlertTriangle size={12} />, title: 'Low stock alert triggered', detail: 'Dosa Batter at Hounslow: 1.2 kg', sub: 'Below reorder point 3 kg', time: '06:08:16', color: '#92400E', bg: '#FEF3C7' },
-  { id: 'stream-008', type: 'duplicate', icon: <ShieldCheck size={12} />, title: 'Duplicate blocked: MF-DAR-6100', detail: 'Event wh_evt_j0k1l2m3 rejected', sub: 'Idempotency key matched', time: '04:44:03', color: '#5B21B6', bg: '#EDE9FE' },
-  { id: 'stream-009', type: 'unmapped', icon: <AlertTriangle size={12} />, title: 'Unmapped item: Chilli Paneer', detail: 'MF-HOU-10479 · No active recipe', sub: 'Stock NOT deducted — action required', time: '05:28:56', color: '#991B1B', bg: '#FEE2E2' },
-  { id: 'stream-010', type: 'cancel', icon: <XCircle size={12} />, title: 'MF-HOU-10478 cancelled', detail: 'Stock reversal posted', sub: 'No net inventory impact', time: '05:14:23', color: '#6B7280', bg: '#F3F4F6' },
+  { id: 'stream-001', type: 'order', icon: <ShoppingCart size={12} />, title: 'SK-STH-10482 received', detail: 'Chicken Burger × 2, Caesar Salad (Add Chicken) × 1, French Fries × 1 · Stanhill Hotel Limited', sub: 'Webhook wh_evt_001sth', time: '13:17:32', color: 'var(--primary)', bg: '#FEE2E2' },
+  { id: 'stream-002', type: 'fefo', icon: <CheckCircle size={12} />, title: 'Recipe consumption calculated', detail: 'Burger + salad recipes; Add Chicken deducts extra chicken only · Stanhill Hotel Limited', sub: 'Approved recipes only', time: '13:17:33', color: '#166534', bg: '#DCFCE7' },
+  { id: 'stream-004', type: 'complete', icon: <Zap size={12} />, title: 'SK-STH-10482 complete', detail: 'Consumption recorded against order · Stanhill Hotel Limited', sub: 'Stock ledger updated once (idempotent)', time: '13:17:34', color: '#1E40AF', bg: '#DBEAFE' },
+  { id: 'stream-005', type: 'order', icon: <ShoppingCart size={12} />, title: 'SK-STH-10481 received', detail: 'BLT (Brown Bread) × 2, Latte × 2 · Stanhill Hotel Limited', sub: 'Webhook wh_evt_002sth', time: '13:08:14', color: 'var(--primary)', bg: '#FEE2E2' },
+  { id: 'stream-007', type: 'alert', icon: <AlertTriangle size={12} />, title: 'Low stock alert triggered', detail: 'Cheddar cheese at Stanhill Hotel Limited: 1.8 kg', sub: 'Below minimum 3 kg', time: '13:08:16', color: '#92400E', bg: '#FEF3C7' },
+  { id: 'stream-008', type: 'duplicate', icon: <ShieldCheck size={12} />, title: 'Duplicate blocked: SK-WRH-6100', detail: 'Event wh_evt_010wrh rejected · Warren House Hotel Limited', sub: 'Idempotency key matched', time: '18:44:03', color: '#5B21B6', bg: '#EDE9FE' },
+  { id: 'stream-009', type: 'unmapped', icon: <AlertTriangle size={12} />, title: 'Unmapped item: Chilli Paneer', detail: 'SK-STH-10479 · Not on current EPOS menu · Stanhill Hotel Limited', sub: 'Stock NOT deducted — action required', time: '12:28:56', color: '#991B1B', bg: '#FEE2E2' },
+  { id: 'stream-010', type: 'cancel', icon: <XCircle size={12} />, title: 'SK-STH-10478 cancelled', detail: 'Stock reversal posted once · Stanhill Hotel Limited', sub: 'No net inventory impact', time: '12:14:23', color: '#6B7280', bg: '#F3F4F6' },
 ];
 
 const newRestaurantStream = NEW_RESTAURANTS.flatMap((r, i) => [
-  { id: `stream-${r.code.toLowerCase()}-1`, type: 'order', icon: <ShoppingCart size={12} />, title: `MF-${r.code}-${5200 + i * 11} received`, detail: `Masala Dosa × 1 · ${r.name}`, sub: `Webhook wh_evt_${r.code.toLowerCase()}1`, time: `06:${String(10 + i * 3).padStart(2, '0')}:10`, color: 'var(--primary)', bg: '#FEE2E2' },
-  { id: `stream-${r.code.toLowerCase()}-2`, type: 'fefo', icon: <CheckCircle size={12} />, title: 'FEFO allocation: Dosa Batter', detail: `100g from PB-2024-0111 · MF-${r.code}-${5200 + i * 11}`, sub: 'Earliest eligible batch', time: `06:${String(10 + i * 3).padStart(2, '0')}:11`, color: '#166534', bg: '#DCFCE7' },
+  { id: `stream-${r.code.toLowerCase()}-1`, type: 'order', icon: <ShoppingCart size={12} />, title: `SK-${r.code}-${5200 + i * 11} received`, detail: `Healthy Flavour Bowl (Add Halloumi) × 1 · ${r.name}`, sub: `Webhook wh_evt_${r.code.toLowerCase()}1`, time: `13:${String(10 + i * 3).padStart(2, '0')}:10`, color: 'var(--primary)', bg: '#FEE2E2' },
 ]);
 
 const initialStream = [...baseStream, ...newRestaurantStream];
@@ -37,8 +30,8 @@ export default function EPOSLiveStream() {
   const [events, setEvents] = useState(initialStream);
   const [newCount, setNewCount] = useState(0);
   const code = scope ? codeByRestaurant[scope] : null;
-  const visibleEvents = code
-    ? events.filter((e) => `${e.title} ${e.detail}`.includes(`MF-${code}-`) || e.detail.includes(scope as string))
+  const visibleEvents = scope
+    ? events.filter((e) => `${e.title} ${e.detail}`.includes(scope as string) || (code ? `${e.title} ${e.detail}`.includes(`SK-${code}-`) : false))
     : events;
 
   useEffect(() => {

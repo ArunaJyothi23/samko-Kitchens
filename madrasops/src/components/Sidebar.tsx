@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
-import { LayoutDashboard, FlaskConical, Truck, PackageCheck, ShoppingCart, BarChart3, Settings, Users, FileText, ChevronLeft, ChevronRight, ChevronDown, Layers, Zap, AlertTriangle, ClipboardList, TrendingUp, Package, GitBranch, Receipt, Wallet, BookOpen, Scale } from 'lucide-react';
+import { LayoutDashboard, PackageCheck, ShoppingCart, BarChart3, Settings, Users, FileText, ChevronLeft, ChevronRight, ChevronDown, Layers, Zap, AlertTriangle, ClipboardList, TrendingUp, Package, GitBranch, Receipt, Wallet, BookOpen, Scale, Soup } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
@@ -45,28 +45,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'nav-group-kitchen',
-    label: 'Central Kitchen',
-    items: [
-      {
-        id: 'nav-production-batches',
-        label: 'Production Batches',
-        href: '/production-batches',
-        icon: <FlaskConical size={17} />,
-        badge: 3,
-        badgeVariant: 'info',
-      },
-      {
-        id: 'nav-dispatch',
-        label: 'Dispatch Management',
-        href: '/dispatch-management',
-        icon: <Truck size={17} />,
-        badge: 2,
-        badgeVariant: 'warning',
-      },
-    ],
-  },
-  {
     id: 'nav-group-restaurant',
     label: 'Restaurant Ops',
     items: [
@@ -86,9 +64,15 @@ const navGroups: NavGroup[] = [
       },
       {
         id: 'nav-inventory',
-        label: 'Inventory',
+        label: 'Raw Material Inventory',
         href: '/inventory',
         icon: <Package size={17} />,
+      },
+      {
+        id: 'nav-bulk-prep',
+        label: 'Bulk Preparation',
+        href: '/bulk-preparation',
+        icon: <Soup size={17} />,
       },
       {
         id: 'nav-wastage',
@@ -204,12 +188,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const purchaseActive = pathname.startsWith('/purchase') || pathname.startsWith('/vendor-orders');
   const purchaseExpanded = purchaseOpen || purchaseActive;
 
-  // Restaurant managers only see restaurant-level modules (no central kitchen / tenant admin)
-  const hiddenForRestaurant = new Set(['nav-group-kitchen', 'nav-integrations', 'nav-users', 'nav-settings']);
-  const visibleGroups = lockedRestaurant
+  // Restaurant managers only see restaurant-level modules (no tenant admin)
+  const hiddenForRestaurant = new Set(['nav-integrations', 'nav-users', 'nav-settings']);
+  const hiddenForFinance = new Set(['nav-integrations', 'nav-users', 'nav-settings']);
+  const hiddenSet = lockedRestaurant ? hiddenForRestaurant : user?.readOnly ? hiddenForFinance : null;
+  const visibleGroups = hiddenSet
     ? navGroups
-        .filter((g) => !hiddenForRestaurant.has(g.id))
-        .map((g) => ({ ...g, items: g.items.filter((i) => !hiddenForRestaurant.has(i.id)) }))
+        .filter((g) => !hiddenSet.has(g.id))
+        .map((g) => ({ ...g, items: g.items.filter((i) => !hiddenSet.has(i.id)) }))
         .filter((g) => g.items.length > 0)
     : navGroups;
 

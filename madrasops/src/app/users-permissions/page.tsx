@@ -16,39 +16,33 @@ interface User {
   createdAt: string;
 }
 
+const BOTH = 'Both Hotels';
+
 const baseUsersData: User[] = [
-  { id: 'USR-001', name: 'Rajesh Kumar', email: 'owner@samkokitchens.co.uk', role: 'Business Owner / MD', location: 'All Locations', status: 'active', lastLogin: '2026-10-11 06:30', createdAt: '2026-01-01' },
-  { id: 'USR-002', name: 'Priya Sharma', email: 'kitchen@samkokitchens.co.uk', role: 'Central Kitchen Manager', location: 'Central Kitchen', status: 'active', lastLogin: '2026-10-11 05:45', createdAt: '2026-01-15' },
-  { id: 'USR-003', name: 'Anita Menon', email: 'hounslow@samkokitchens.co.uk', role: 'Restaurant Manager', location: 'Hounslow', status: 'active', lastLogin: '2026-10-11 07:00', createdAt: '2026-02-01' },
-  { id: 'USR-004', name: 'Vikram Nair', email: 'finance@samkokitchens.co.uk', role: 'Finance / Auditor', location: 'All Locations', status: 'active', lastLogin: '2026-10-10 17:30', createdAt: '2026-02-15' },
-  { id: 'USR-005', name: 'Suresh Pillai', email: 'reading@samkokitchens.co.uk', role: 'Restaurant Manager', location: 'Reading', status: 'active', lastLogin: '2026-10-11 08:00', createdAt: '2026-03-01' },
-  { id: 'USR-006', name: 'Meena Lakshmi', email: 'leicester@samkokitchens.co.uk', role: 'Restaurant Manager', location: 'Leicester', status: 'active', lastLogin: '2026-10-11 09:15', createdAt: '2026-04-01' },
-  { id: 'USR-007', name: 'Kumar Rajan', email: 'dartford@samkokitchens.co.uk', role: 'Restaurant Manager', location: 'Dartford', status: 'active', lastLogin: '2026-10-10 22:00', createdAt: '2026-03-15' },
-  { id: 'USR-008', name: 'Ravi Krishnan', email: 'ravi@samkokitchens.co.uk', role: 'Central Kitchen Staff', location: 'Central Kitchen', status: 'inactive', lastLogin: '2026-10-05 14:00', createdAt: '2026-05-01' },
+  { id: 'USR-001', name: 'Rajesh Kumar', email: 'owner@samkokitchens.co.uk', role: 'Business Owner', location: BOTH, status: 'active', lastLogin: '2026-10-11 06:30', createdAt: '2026-01-01' },
+  { id: 'USR-002', name: 'Priya Sharma', email: 'kitchen@samkokitchens.co.uk', role: 'Kitchen Manager', location: BOTH, status: 'active', lastLogin: '2026-10-11 05:45', createdAt: '2026-01-15' },
+  { id: 'USR-004', name: 'Vikram Nair', email: 'finance@samkokitchens.co.uk', role: 'Finance / Auditor', location: BOTH, status: 'active', lastLogin: '2026-10-10 17:30', createdAt: '2026-02-15' },
 ];
 
 const newUsersData: User[] = NEW_RESTAURANTS.map((r, i) => ({
   id: `USR-${String(9 + i).padStart(3, '0')}`,
   name: r.managerName,
   email: r.email,
-  role: 'Restaurant Manager',
+  role: `${r.shortName} Hotel User`,
   location: r.name,
   status: 'active' as const,
   lastLogin: `2026-10-11 0${6 + (i % 4)}:${String(10 + i * 5).padStart(2, '0')}`,
-  createdAt: '2026-10-01',
+  createdAt: '2026-10-31',
 }));
 
 const allUsersData: User[] = [...baseUsersData, ...newUsersData];
 
 const roles = [
-  { name: 'SaaS Super Admin', permissions: ['All system access', 'Tenant management', 'Global settings'], color: '#991B1B' },
-  { name: 'Business Owner / MD', permissions: ['All locations view', 'Financial reports', 'User management'], color: '#ED1C24' },
-  { name: 'Central Kitchen Manager', permissions: ['Recipes', 'Production', 'Dispatch', 'Ingredients'], color: '#168447' },
-  { name: 'Central Kitchen Staff', permissions: ['Production recording', 'Ingredient usage', 'Batch completion'], color: '#166534' },
-  { name: 'Restaurant Manager', permissions: ['GRN', 'Inventory', 'Wastage', 'Stocktake', 'Daily closing'], color: '#0EA5E9' },
-  { name: 'Restaurant Staff', permissions: ['Authorised stock ops', 'Wastage recording'], color: '#6366F1' },
-  { name: 'Finance / Auditor', permissions: ['Cost reports', 'Audit logs', 'Profitability', 'Read-only'], color: '#F9B233' },
-  { name: 'Read-only User', permissions: ['Authorised dashboards', 'Reports view only'], color: '#9CA3AF' },
+  { name: 'Stanhill Hotel User', permissions: ['Stanhill Hotel Limited only', 'Inventory', 'Purchases & GRN', 'Wastage & adjustments', 'Recipes & food costing', 'EPOS sales', 'Hotel reports'], color: '#0D9488' },
+  { name: 'Warren House Hotel User', permissions: ['Warren House Hotel Limited only', 'Inventory', 'Purchases & GRN', 'Wastage & adjustments', 'Recipes & food costing', 'EPOS sales', 'Hotel reports'], color: '#7C3AED' },
+  { name: 'Kitchen Manager', permissions: ['Both hotels', 'Raw materials', 'Recipes & BOM', 'Menu management', 'Production', 'Purchases & stock', 'Wastage', 'Food costing reports'], color: '#168447' },
+  { name: 'Business Owner', permissions: ['Both hotels', 'Consolidated dashboards', 'Inventory valuation', 'Purchase & supplier reports', 'Profitability', 'User & role management', 'Hotel configuration'], color: '#ED1C24' },
+  { name: 'Finance / Auditor', permissions: ['Both hotels', 'Read-only by default', 'Purchases & invoices', 'EPOS revenue', 'Stock valuation', 'Audit trails', 'Export reports'], color: '#F9B233' },
 ];
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -78,7 +72,7 @@ export default function UsersPermissionsPage() {
         <div>
           <h1 className="page-title">Users & Permissions</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            Manage user accounts, roles and access control across all locations
+            Manage user accounts, roles and access control for Stanhill Hotel Limited and Warren House Hotel Limited
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -230,9 +224,9 @@ export default function UsersPermissionsPage() {
                 </select>
               </div>
               <div>
-                <label className="label-text block mb-1">Location Access</label>
+                <label className="label-text block mb-1">Hotel Access</label>
                 <select className="input-field w-full">
-                  {['All Locations', 'Central Kitchen', 'Hounslow', 'Reading', 'Dartford', 'Leicester'].map(l => <option key={l}>{l}</option>)}
+                  {[BOTH, ...NEW_RESTAURANTS.map((r) => r.name as string)].map(l => <option key={l}>{l}</option>)}
                 </select>
               </div>
             </div>

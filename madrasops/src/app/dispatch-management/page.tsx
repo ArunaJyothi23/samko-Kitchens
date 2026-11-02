@@ -1,11 +1,5 @@
-import React from 'react';
-import AppLayout from '@/components/AppLayout';
-import DispatchManagementContent from './components/DispatchManagementContent';
+import { redirect } from 'next/navigation';
 
 export default function DispatchManagementPage() {
-  return (
-    <AppLayout>
-      <DispatchManagementContent />
-    </AppLayout>
-  );
+  redirect('/');
 }

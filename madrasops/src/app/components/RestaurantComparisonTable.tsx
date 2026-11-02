@@ -4,85 +4,49 @@ import React from 'react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
 
-const baseRestaurants = [
-  {
-    id: 'rest-hounslow',
-    name: 'Hounslow',
-    todaySales: '£1,248',
-    foodCostPct: 31.4,
-    grossMargin: '68.6%',
-    stockVal: '£1,842',
-    wastage: '£34.20',
-    nearExpiry: 3,
-    unmapped: 5,
-    status: 'alert' as const,
-    closingStatus: 'Open',
-  },
-  {
-    id: 'rest-reading',
-    name: 'Reading',
-    todaySales: '£892',
-    foodCostPct: 29.8,
-    grossMargin: '70.2%',
-    stockVal: '£1,104',
-    wastage: '£21.80',
-    nearExpiry: 2,
-    unmapped: 3,
-    status: 'completed' as const,
-    closingStatus: 'Open',
-  },
-  {
-    id: 'rest-dartford',
-    name: 'Dartford',
-    todaySales: '£648',
-    foodCostPct: 33.2,
-    grossMargin: '66.8%',
-    stockVal: '£982',
-    wastage: '£18.40',
-    nearExpiry: 1,
-    unmapped: 2,
-    status: 'alert' as const,
-    closingStatus: 'Open',
-  },
-  {
-    id: 'rest-leicester',
-    name: 'Leicester',
-    todaySales: '£460',
-    foodCostPct: 30.1,
-    grossMargin: '69.9%',
-    stockVal: '£893',
-    wastage: '£13.00',
-    nearExpiry: 1,
-    unmapped: 2,
-    status: 'completed' as const,
-    closingStatus: 'Open',
-  },
-];
+const hotelRows = NEW_RESTAURANTS.map((r) => ({
+  id: `rest-${r.code.toLowerCase()}`,
+  name: r.name as string,
+  todaySales: `£${Math.round(1248 * r.scale).toLocaleString('en-GB')}`,
+  salesNum: 1248 * r.scale,
+  foodCostPct: r.foodCostPct,
+  grossMargin: `${(100 - r.foodCostPct).toFixed(1)}%`,
+  stockVal: `£${Math.round(1842 * r.scale).toLocaleString('en-GB')}`,
+  stockNum: 1842 * r.scale,
+  wastage: `£${(34.2 * r.scale).toFixed(2)}`,
+  wastageNum: 34.2 * r.scale,
+  nearExpiry: 3,
+  unmapped: 5,
+  status: (r.foodCostPct > 31 ? 'alert' : 'completed') as 'alert' | 'completed',
+  closingStatus: 'Open',
+}));
 
-const restaurants = [
-  ...baseRestaurants,
-  ...NEW_RESTAURANTS.map((r) => ({
-    id: `rest-${r.code.toLowerCase()}`,
-    name: r.name as string,
-    todaySales: `£${Math.round(1248 * r.scale).toLocaleString('en-GB')}`,
-    foodCostPct: r.foodCostPct,
-    grossMargin: `${(100 - r.foodCostPct).toFixed(1)}%`,
-    stockVal: `£${Math.round(1842 * r.scale).toLocaleString('en-GB')}`,
-    wastage: `£${(34.2 * r.scale).toFixed(2)}`,
-    nearExpiry: 2,
-    unmapped: 3,
-    status: (r.foodCostPct > 31 ? 'alert' : 'completed') as 'alert' | 'completed',
-    closingStatus: 'Open',
-  })),
-];
+const totalSales = hotelRows.reduce((s, r) => s + r.salesNum, 0);
+const totalStock = hotelRows.reduce((s, r) => s + r.stockNum, 0);
+const totalWastage = hotelRows.reduce((s, r) => s + r.wastageNum, 0);
+const weightedFoodCost = hotelRows.reduce((s, r) => s + r.foodCostPct * r.salesNum, 0) / totalSales;
+
+const combinedRow = {
+  id: 'rest-combined',
+  name: 'Combined (Both Hotels)',
+  todaySales: `£${Math.round(totalSales).toLocaleString('en-GB')}`,
+  foodCostPct: Number(weightedFoodCost.toFixed(1)),
+  grossMargin: `${(100 - weightedFoodCost).toFixed(1)}%`,
+  stockVal: `£${Math.round(totalStock).toLocaleString('en-GB')}`,
+  wastage: `£${totalWastage.toFixed(2)}`,
+  nearExpiry: hotelRows.reduce((s, r) => s + r.nearExpiry, 0),
+  unmapped: hotelRows.reduce((s, r) => s + r.unmapped, 0),
+  status: (weightedFoodCost > 31 ? 'alert' : 'completed') as 'alert' | 'completed',
+  closingStatus: 'Open',
+};
 
 export default function RestaurantComparisonTable() {
   const scope = useScopedRestaurant();
-  const rows = scope ? restaurants.filter((r) => r.name === scope) : restaurants;
+  const rows = scope ? hotelRows.filter((r) => r.name === scope) : [...hotelRows, combinedRow];
   return (
     <div className="card-elevated" style={{ padding: 20 }}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="section-header">{scope ? `${scope} Performance` : 'Restaurant Comparison'}</h2>
+        <h2 className="section-header">{scope ? `${scope} Performance` : 'Hotel Comparison'}</h2>
         <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>Today · 11 Oct 2026</span>
       </div>
       <div className="overflow-x-auto">
@@ -90,7 +54,7 @@ export default function RestaurantComparisonTable() {
           <thead>
             <tr>
               {[
-                'Location',
+                'Hotel',
                 "Today's Sales",
                 'Food Cost %',
                 'Gross Margin',
@@ -115,7 +79,10 @@ export default function RestaurantComparisonTable() {
               <tr
                 key={r.id}
                 className="table-row-hover"
-                style={{ borderBottom: idx < rows.length - 1 ? '1px solid var(--border)' : 'none' }}
+                style={{
+                  borderBottom: idx < rows.length - 1 ? '1px solid var(--border)' : 'none',
+                  background: r.id === 'rest-combined' ? 'var(--muted)' : undefined,
+                }}
               >
                 <td className="py-3 pr-4">
                   <span className="font-semibold" style={{ fontSize: 13.5, color: 'var(--foreground)' }}>
@@ -142,39 +109,17 @@ export default function RestaurantComparisonTable() {
                 <td className="py-3 pr-4 tabular-nums" style={{ fontSize: 13.5, color: 'var(--foreground)' }}>
                   {r.stockVal}
                 </td>
-                <td className="py-3 pr-4 tabular-nums" style={{ fontSize: 13.5, color: '#991B1B', fontWeight: 500 }}>
+                <td className="py-3 pr-4 tabular-nums" style={{ fontSize: 13.5, color: 'var(--foreground)' }}>
                   {r.wastage}
                 </td>
-                <td className="py-3 pr-4">
-                  <span
-                    className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                    style={{
-                      background: r.nearExpiry > 2 ? '#FEE2E2' : '#FEF3C7',
-                      color: r.nearExpiry > 2 ? '#991B1B' : '#92400E',
-                      fontSize: 11,
-                    }}
-                  >
-                    {r.nearExpiry} batches
-                  </span>
+                <td className="py-3 pr-4 tabular-nums" style={{ fontSize: 13.5, color: 'var(--foreground)' }}>
+                  {r.nearExpiry}
                 </td>
-                <td className="py-3 pr-4">
-                  <span
-                    className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                    style={{
-                      background: r.unmapped > 3 ? '#FEE2E2' : '#FEF3C7',
-                      color: r.unmapped > 3 ? '#991B1B' : '#92400E',
-                      fontSize: 11,
-                    }}
-                  >
-                    {r.unmapped} items
-                  </span>
+                <td className="py-3 pr-4 tabular-nums" style={{ fontSize: 13.5, color: 'var(--foreground)' }}>
+                  {r.unmapped}
                 </td>
                 <td className="py-3">
-                  <StatusBadge
-                    variant={r.foodCostPct > 31 ? 'alert' : 'completed'}
-                    label={r.foodCostPct > 31 ? 'Above Target' : 'On Target'}
-                    dot
-                  />
+                  <StatusBadge variant={r.status} />
                 </td>
               </tr>
             ))}

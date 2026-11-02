@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
-import { Download, Search, RefreshCw, Link2, Unlink, AlertTriangle, CheckCircle2, Plus } from 'lucide-react';
+import { Download, Search, RefreshCw, Link2, Unlink, AlertTriangle, CheckCircle2, Plus, Trash2, Pencil, Check, X as XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth, useScopedRestaurant } from '@/contexts/AuthContext';
 import DateRangeFilter from '../finance/components/DateRangeFilter';
@@ -19,13 +19,14 @@ const SYNC_LOG_SEED = [
   { id: 's1', at: '2026-10-29T06:00:00.000Z', type: 'Scheduled (incremental)', result: 'Success', detail: '142 transactions checked, 6 new, 1 updated, 0 duplicates skipped (external IDs).' },
   { id: 's2', at: '2026-10-28T06:00:00.000Z', type: 'Scheduled (incremental)', result: 'Success', detail: '98 checked, 3 new, 0 updated, 2 duplicates skipped.' },
   { id: 's3', at: '2026-10-27T11:32:00.000Z', type: 'Manual', result: 'Error', detail: 'QuickBooks API rate limit (429). Backed off 60s and retried — resolved on attempt 2 (simulated).' },
+  { id: 's3b', at: '2026-10-27T03:00:00.000Z', type: 'Scheduled (incremental)', result: 'Error', detail: 'OAuth access token expired (401). Automatic refresh failed — re-authorisation required (simulated).' },
   { id: 's4', at: '2026-10-26T06:00:00.000Z', type: 'Scheduled (incremental)', result: 'Success', detail: '1 voided transaction removed from totals (QB-DART-… voided).' },
   { id: 's5', at: '2026-10-01T09:10:00.000Z', type: 'Initial historical import', result: 'Success', detail: '2,481 transactions imported for 01 Sep 2025 – 30 Sep 2026.' },
 ];
 
 export default function AccountingPage() {
   const scope = useScopedRestaurant();
-  const { user } = useAuth();
+  const { user, lockedRestaurant, readOnly } = useAuth();
   const [tab, setTab] = useState<Tab>('expenses');
   const [connected, setConnected] = useState(true);
   const [mappings, setMappings] = useState<AccountMapping[]>(DEFAULT_MAPPINGS);
@@ -40,8 +41,45 @@ export default function AccountingPage() {
   const [syncing, setSyncing] = useState(false);
   const [newAcct, setNewAcct] = useState({ accountCode: '', accountName: '', category: 'Other Operating' as ExpenseCategory, subCategory: '' });
   const [allocations, setAllocations] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState({ accountCode: '', accountName: '', subCategory: '' });
 
-  const canAdmin = !scope; // restaurant managers are read-only on accounting configuration
+  const startEdit = (m: AccountMapping) => {
+    setEditingId(m.id);
+    setEditDraft({ accountCode: m.accountCode, accountName: m.accountName, subCategory: m.subCategory });
+  };
+  const saveEdit = () => {
+    if (!editDraft.accountCode.trim() || !editDraft.accountName.trim()) {
+      toast.error('Account code and name are required');
+      return;
+    }
+    setMappings((all) => all.map((x) => (x.id === editingId ? { ...x, ...editDraft } : x)));
+    setEditingId(null);
+    toast.success('Mapping updated (demo)');
+  };
+  const deleteMapping = (id: string) => {
+    setMappings((all) => all.filter((x) => x.id !== id));
+    toast.success('Mapping removed — matching transactions will fall into Unallocated on next sync (demo)');
+  };
+  const retryFailed = (id: string) => {
+    if (!connected) {
+      toast.error('Connect QuickBooks first (demo).');
+      return;
+    }
+    setSyncing(true);
+    setTimeout(() => {
+      const nowIso = new Date().toISOString();
+      setSyncLog((l) => [
+        { id: `s-retry-${nowIso}`, at: nowIso, type: 'Retry of failed sync', result: 'Success', detail: `Retry of ${id} succeeded after token refresh and backoff (simulated). Duplicates prevented via external transaction IDs.` },
+        ...l.map((x) => (x.id === id ? { ...x, result: 'Resolved' } : x)),
+      ]);
+      setLastSync(nowIso);
+      setSyncing(false);
+      toast.success('Failed sync retried (simulated)');
+    }, 900);
+  };
+
+  const canAdmin = !lockedRestaurant && !readOnly; // hotel users and Finance/Auditor are read-only on accounting configuration
   const { from, to } = resolveRange(rangeKey, customFrom, customTo);
 
   const txns = useMemo(() => buildExpenseTxns(mappings), [mappings]);
@@ -148,7 +186,7 @@ export default function AccountingPage() {
                 <button className="btn-primary" disabled={!canAdmin} onClick={() => { setConnected(true); toast.success('Connected (demo) — no real OAuth performed'); }}><Link2 size={14} /> Connect QuickBooks</button>
               )}
             </div>
-            {!canAdmin && <p style={{ fontSize: 11, color: 'var(--muted-foreground)', marginTop: 8 }}>Connection settings are restricted to administrators.</p>}
+            {!canAdmin && <p style={{ fontSize: 11, color: 'var(--muted-foreground)', marginTop: 8 }}>Connection settings are restricted to administrators (Finance / Auditor and hotel users are read-only).</p>}
           </div>
           <div className="card">
             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Integration notes</h3>
@@ -187,7 +225,7 @@ export default function AccountingPage() {
               </select>
               {!scope && (
                 <select className="input-field" style={{ width: 200 }} value={locFilter} onChange={(e) => setLocFilter(e.target.value)} aria-label="Restaurant">
-                  <option value="All">All restaurants</option>
+                  <option value="All">Both hotels</option>
                   <option value="Unallocated">Unallocated</option>
                   {ALL_LOCATIONS.map((l) => <option key={l}>{l}</option>)}
                 </select>
@@ -235,19 +273,38 @@ export default function AccountingPage() {
               <h3 style={{ fontSize: 14, fontWeight: 600 }}>QuickBooks account → dashboard category</h3>
             </div>
             <table className="data-table">
-              <thead><tr><th>Code</th><th>QuickBooks account</th><th>Dashboard category</th><th>Sub-category</th></tr></thead>
+              <thead><tr><th>Code</th><th>QuickBooks account</th><th>Dashboard category</th><th>Sub-category</th><th>Actions</th></tr></thead>
               <tbody>
                 {mappings.map((m) => (
                   <tr key={m.id}>
-                    <td className="font-mono" style={{ fontSize: 12 }}>{m.accountCode}</td>
-                    <td style={{ fontSize: 13 }}>{m.accountName}</td>
+                    <td className="font-mono" style={{ fontSize: 12 }}>
+                      {editingId === m.id ? <input className="input-field" style={{ width: 80 }} value={editDraft.accountCode} onChange={(e) => setEditDraft({ ...editDraft, accountCode: e.target.value })} aria-label="Account code" /> : m.accountCode}
+                    </td>
+                    <td style={{ fontSize: 13 }}>
+                      {editingId === m.id ? <input className="input-field" value={editDraft.accountName} onChange={(e) => setEditDraft({ ...editDraft, accountName: e.target.value })} aria-label="Account name" /> : m.accountName}
+                    </td>
                     <td>
                       <select className="input-field" style={{ width: 170 }} disabled={!canAdmin} value={m.category} aria-label={`Category for ${m.accountName}`}
                         onChange={(e) => setMappings((all) => all.map((x) => (x.id === m.id ? { ...x, category: e.target.value as ExpenseCategory } : x)))}>
                         {CATS.map((c) => <option key={c}>{c}</option>)}
                       </select>
                     </td>
-                    <td style={{ fontSize: 12 }}>{m.subCategory}</td>
+                    <td style={{ fontSize: 12 }}>
+                      {editingId === m.id ? <input className="input-field" value={editDraft.subCategory} onChange={(e) => setEditDraft({ ...editDraft, subCategory: e.target.value })} aria-label="Sub-category" /> : m.subCategory}
+                    </td>
+                    <td>
+                      {editingId === m.id ? (
+                        <div className="flex gap-1">
+                          <button type="button" className="btn-primary" style={{ padding: '4px 8px' }} onClick={saveEdit} aria-label="Save mapping"><Check size={13} /></button>
+                          <button type="button" className="btn-secondary" style={{ padding: '4px 8px' }} onClick={() => setEditingId(null)} aria-label="Cancel edit"><XIcon size={13} /></button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-1">
+                          <button type="button" className="btn-ghost" style={{ padding: 6 }} disabled={!canAdmin} onClick={() => startEdit(m)} aria-label={`Edit ${m.accountName}`}><Pencil size={13} /></button>
+                          <button type="button" className="btn-ghost" style={{ padding: 6, color: '#991B1B' }} disabled={!canAdmin} onClick={() => deleteMapping(m.id)} aria-label={`Delete ${m.accountName}`}><Trash2 size={13} /></button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -280,14 +337,21 @@ export default function AccountingPage() {
             <button className="btn-secondary" disabled={!canAdmin || syncing} onClick={() => runSync('Manual retry')} style={{ padding: '6px 10px' }}><RefreshCw size={13} /> Retry / sync now</button>
           </div>
           <table className="data-table">
-            <thead><tr><th>Time</th><th>Type</th><th>Result</th><th>Detail</th></tr></thead>
+            <thead><tr><th>Time</th><th>Type</th><th>Result</th><th>Detail</th><th></th></tr></thead>
             <tbody>
               {syncLog.map((s) => (
                 <tr key={s.id}>
                   <td style={{ fontSize: 12 }}>{fmtDate(s.at)} {s.at.slice(11, 16)}</td>
                   <td style={{ fontSize: 12 }}>{s.type}</td>
-                  <td style={{ fontSize: 12, fontWeight: 700, color: s.result === 'Success' ? '#166534' : '#991B1B' }}>{s.result}</td>
+                  <td style={{ fontSize: 12, fontWeight: 700, color: s.result === 'Success' || s.result === 'Resolved' ? '#166534' : '#991B1B' }}>{s.result}</td>
                   <td style={{ fontSize: 12 }}>{s.detail}</td>
+                  <td>
+                    {s.result === 'Error' && (
+                      <button type="button" className="btn-secondary" style={{ padding: '4px 10px', fontSize: 12 }} disabled={!canAdmin || syncing} onClick={() => retryFailed(s.id)}>
+                        <RefreshCw size={12} /> Retry
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -10,7 +10,7 @@ import { PurchaseOrder, SUPPLIERS, formatDate, usePurchaseStore } from '../compo
 import OrderDetailPanel from '../components/OrderDetailPanel';
 
 export default function PurchaseHistoryPage() {
-  const { lockedRestaurant } = useAuth();
+  const { activeScope: lockedRestaurant } = useAuth();
   const { orders, hydrated } = usePurchaseStore();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('All');
@@ -100,39 +100,39 @@ export default function PurchaseHistoryPage() {
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll table-scroll-y">
           <table className="data-table">
             <thead>
               <tr>
-                <th>PO Number</th>
-                <th>Vendor</th>
-                <th>Items</th>
-                <th>Order Total</th>
-                <th>Status</th>
-                <th>GRN No</th>
-                <th>Created</th>
-                <th>Received</th>
-                <th>Actions</th>
+                <th className="col-left nowrap">PO Number</th>
+                <th className="col-left col-wide">Vendor</th>
+                <th className="col-right">Items</th>
+                <th className="col-right">Order Total</th>
+                <th className="col-center">Status</th>
+                <th className="col-left nowrap">GRN No</th>
+                <th className="col-center nowrap">Created</th>
+                <th className="col-center nowrap">Received</th>
+                <th className="col-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered?.map((o) => (
                 <tr key={o?.id}>
-                  <td><span className="font-mono font-semibold" style={{ fontSize: 12.5 }}>{o?.poNumber}</span></td>
-                  <td style={{ fontSize: 13 }}>{o?.vendor}</td>
-                  <td style={{ fontSize: 12 }}>{o?.lines?.length}</td>
-                  <td style={{ fontSize: 13, fontWeight: 600 }}>£{o?.total?.toFixed(2)}</td>
-                  <td>
+                  <td className="col-left nowrap"><span className="font-mono font-semibold" style={{ fontSize: 12.5 }}>{o?.poNumber}</span></td>
+                  <td className="col-left col-wide" style={{ fontSize: 13 }}>{o?.vendor}</td>
+                  <td className="col-right" style={{ fontSize: 12 }}>{o?.lines?.length}</td>
+                  <td className="col-right" style={{ fontSize: 13, fontWeight: 600 }}>£{o?.total?.toFixed(2)}</td>
+                  <td className="col-center nowrap">
                     <StatusBadge
                       variant={o?.status === 'received' ? 'completed' : 'pending'}
                       label={o?.status === 'received' ? 'Received' : 'Pending'}
                       dot
                     />
                   </td>
-                  <td style={{ fontSize: 12 }} className="font-mono">{o?.grnNumber ?? '—'}</td>
-                  <td style={{ fontSize: 12 }}>{formatDate(o?.createdAt)}</td>
-                  <td style={{ fontSize: 12 }}>{o?.receivedAt ? formatDate(o?.receivedAt) : '—'}</td>
-                  <td>
+                  <td style={{ fontSize: 12 }} className="col-left nowrap font-mono">{o?.grnNumber ?? '—'}</td>
+                  <td className="col-center nowrap" style={{ fontSize: 12 }}>{formatDate(o?.createdAt)}</td>
+                  <td className="col-center nowrap" style={{ fontSize: 12 }}>{o?.receivedAt ? formatDate(o?.receivedAt) : '—'}</td>
+                  <td className="col-center nowrap">
                     <button type="button" className="btn-secondary" style={{ padding: '4px 10px', fontSize: 11 }} onClick={() => setViewing(o)}>
                       <Eye size={12} /> View
                     </button>

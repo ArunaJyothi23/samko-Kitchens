@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 const statusOptions = ['All', 'created', 'reserved', 'in-transit', 'delivered', 'discrepancy', 'cancelled'];
 
-const destinationOptions = ['All', 'Hounslow', 'Reading', 'Dartford', 'Leicester', ...NEW_RESTAURANT_NAMES];
+const destinationOptions = ['All', ...NEW_RESTAURANT_NAMES];
 
 const statusMap: Record<string, any> = {
   created: 'draft',
@@ -54,7 +54,7 @@ export default function DispatchManagementContent() {
         <div>
           <h1 className="page-title">Dispatch Management</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 3 }}>
-            {scope ? `Central Kitchen → ${scope}` : 'Central Kitchen → All Restaurants'} · {dispatchOrders.length} dispatches today
+            {scope ? `Kitchen → ${scope}` : 'Kitchen → Both Hotels'} · {dispatchOrders.length} dispatches today
           </p>
         </div>
         <div className="flex items-center gap-2">

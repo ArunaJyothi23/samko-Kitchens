@@ -174,6 +174,177 @@
     background-color: #F9F8F6;
   }
 
+  /* ===== Global table design system ===== */
+  .data-table,
+  table.dt {
+    width: 100%;
+    min-width: max-content;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--foreground);
+  }
+
+  .data-table thead th,
+  table.dt thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--muted);
+    padding: 11px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table tbody td,
+  table.dt tbody td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    overflow-wrap: anywhere;
+    min-width: 72px;
+  }
+
+  .data-table tbody tr:last-child td,
+  table.dt tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .data-table tbody tr:nth-child(even):not(.selected),
+  table.dt tbody tr:nth-child(even):not(.selected) {
+    background-color: rgba(245, 244, 241, 0.45);
+  }
+
+  .data-table tbody tr,
+  table.dt tbody tr {
+    transition: background-color 150ms ease;
+  }
+
+  .data-table tbody tr:hover,
+  table.dt tbody tr:hover {
+    background-color: #F5F3EF;
+  }
+
+  .data-table tbody tr.selected {
+    background-color: #FDF2F2;
+  }
+
+  /* Cells that must never wrap (ids, dates, numbers, status) */
+  .data-table td.nowrap,
+  .data-table th.nowrap,
+  table.dt td.nowrap,
+  table.dt th.nowrap {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  /* Alignment helpers (apply to th and td) */
+  .data-table .col-left, table.dt .col-left { text-align: left; }
+  .data-table .col-center, table.dt .col-center { text-align: center; }
+  .data-table .col-right, table.dt .col-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+
+  /* Wide text columns (names, descriptions) */
+  .data-table .col-wide, table.dt .col-wide {
+    min-width: 200px;
+    white-space: normal;
+  }
+
+  /* Single-line truncation with tooltip via title attribute */
+  .data-table .truncate-cell, table.dt .truncate-cell {
+    display: block;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Empty-state row */
+  .data-table td[colspan], table.dt td[colspan] {
+    text-align: center;
+    padding: 32px 16px;
+    white-space: normal;
+  }
+
+  /* Scroll container: keeps the page from expanding and caps height for sticky headers */
+  .table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-scroll-y {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Table cells inside bare tables with inline-padding (legacy w-full tables) */
+  table.w-full thead th {
+    white-space: nowrap;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  table.w-full tbody td {
+    vertical-align: middle;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  table.w-full tbody tr:hover {
+    background-color: #F5F3EF;
+  }
+
+  /* Unified status chip for tables */
+  .table-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-transform: capitalize;
+  }
+
+  @media (max-width: 768px) {
+    .data-table thead th,
+    table.dt thead th {
+      padding: 10px 12px;
+      font-size: 10.5px;
+    }
+
+    .data-table tbody td,
+    table.dt tbody td {
+      padding: 10px 12px;
+    }
+
+    .table-scroll-y {
+      max-height: 60vh;
+    }
+  }
+
   .btn-primary {
     display: inline-flex;
     align-items: center;

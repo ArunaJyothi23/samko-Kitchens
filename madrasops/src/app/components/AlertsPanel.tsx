@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle, Clock, Package, Zap } from 'lucide-react';
-import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
+import { useScopedRestaurant, NEW_RESTAURANTS, toHotel, rewriteLegacyText } from '@/contexts/AuthContext';
 
 const baseAlerts = [
   {
@@ -11,8 +11,8 @@ const baseAlerts = [
     type: 'expiry',
     severity: 'critical',
     icon: <Clock size={14} />,
-    title: 'Dosa batter expiring',
-    detail: 'Batch PB-2024-0108 · Hounslow · Expires 12 Oct',
+    title: 'Chicken breast expiring',
+    detail: 'Batch BT-2026-304-001 · Hounslow · Expires 4 Nov',
     time: '12 hrs left',
     color: '#991B1B',
     bg: '#FEE2E2',
@@ -23,8 +23,8 @@ const baseAlerts = [
     type: 'expiry',
     severity: 'critical',
     icon: <Clock size={14} />,
-    title: 'Sambar expiring',
-    detail: 'Batch PB-2024-0109 · Reading · Expires 12 Oct',
+    title: 'Fior Di Latte mozzarella expiring',
+    detail: 'Batch BT-2026-304-007 · Reading · Expires 2 Nov',
     time: '14 hrs left',
     color: '#991B1B',
     bg: '#FEE2E2',
@@ -35,8 +35,8 @@ const baseAlerts = [
     type: 'expiry',
     severity: 'critical',
     icon: <Clock size={14} />,
-    title: 'White chutney expiring',
-    detail: 'Batch PB-2024-0105 · Dartford · Expires 12 Oct',
+    title: 'Cod fillet expiring',
+    detail: 'Batch BT-2026-304-008 · Dartford · Expires 2 Nov',
     time: '18 hrs left',
     color: '#991B1B',
     bg: '#FEE2E2',
@@ -47,8 +47,8 @@ const baseAlerts = [
     type: 'low-stock',
     severity: 'warning',
     icon: <Package size={14} />,
-    title: 'Dosa batter low stock',
-    detail: 'Hounslow · 1.2 kg remaining · Reorder at 3 kg',
+    title: 'Cheddar cheese low stock',
+    detail: 'Hounslow · 1.8 kg remaining · Reorder at 3 kg',
     time: 'Est. 2 hrs coverage',
     color: '#92400E',
     bg: '#FEF3C7',
@@ -59,8 +59,8 @@ const baseAlerts = [
     type: 'low-stock',
     severity: 'warning',
     icon: <Package size={14} />,
-    title: 'Red chutney low stock',
-    detail: 'Leicester · 0.3 kg remaining',
+    title: 'Ice cream – Vanilla low stock',
+    detail: 'Leicester · 0.5 litre remaining',
     time: 'Est. 3 hrs coverage',
     color: '#92400E',
     bg: '#FEF3C7',
@@ -72,7 +72,7 @@ const baseAlerts = [
     severity: 'warning',
     icon: <Zap size={14} />,
     title: 'Unmapped: Chilli Paneer',
-    detail: 'Hounslow · 14 orders today · No recipe active',
+    detail: 'Hounslow · Not on current EPOS menu · No recipe',
     time: 'Stock not deducted',
     color: '#92400E',
     bg: '#FEF3C7',
@@ -84,7 +84,7 @@ const baseAlerts = [
     severity: 'warning',
     icon: <AlertTriangle size={14} />,
     title: 'GRN #GRN-0089 discrepancy',
-    detail: 'Reading · Idly batter 2 kg short',
+    detail: 'Reading · Brioche buns 12 pieces short',
     time: 'Pending manager approval',
     color: '#92400E',
     bg: '#FEF3C7',
@@ -98,8 +98,8 @@ const newRestaurantAlerts = NEW_RESTAURANTS.flatMap((r, i) => [
     type: 'expiry',
     severity: 'critical',
     icon: <Clock size={14} />,
-    title: i % 2 === 0 ? 'Dosa batter expiring' : 'Sambar expiring',
-    detail: `Batch PB-2024-01${20 + i} · ${r.name} · Expires 12 Oct`,
+    title: i % 2 === 0 ? 'Chicken breast expiring' : 'Cos lettuce expiring',
+    detail: `Batch BT-2026-304-00${20 + i} · ${r.name} · Expires 12 Oct`,
     time: `${10 + i} hrs left`,
     color: '#991B1B',
     bg: '#FEE2E2',
@@ -110,7 +110,7 @@ const newRestaurantAlerts = NEW_RESTAURANTS.flatMap((r, i) => [
     type: 'low-stock',
     severity: 'warning',
     icon: <Package size={14} />,
-    title: i % 2 === 0 ? 'Red chutney low stock' : 'Idly batter low stock',
+    title: i % 2 === 0 ? 'Cheddar cheese low stock' : 'Cos lettuce low stock',
     detail: `${r.name} · ${(0.3 + i * 0.1).toFixed(1)} kg remaining`,
     time: 'Est. 3 hrs coverage',
     color: '#92400E',
@@ -118,7 +118,12 @@ const newRestaurantAlerts = NEW_RESTAURANTS.flatMap((r, i) => [
   },
 ]);
 
-const alerts = [...baseAlerts, ...newRestaurantAlerts];
+const alerts = [...baseAlerts, ...newRestaurantAlerts].map((a) => ({
+  ...a,
+  restaurant: toHotel(a.restaurant),
+  detail: rewriteLegacyText(a.detail),
+  title: rewriteLegacyText(a.title),
+}));
 
 export default function AlertsPanel() {
   const scope = useScopedRestaurant();

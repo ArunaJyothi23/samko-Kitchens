@@ -1,11 +1,5 @@
-import React from 'react';
-import AppLayout from '@/components/AppLayout';
-import ProductionBatchesContent from './components/ProductionBatchesContent';
+import { redirect } from 'next/navigation';
 
 export default function ProductionBatchesPage() {
-  return (
-    <AppLayout>
-      <ProductionBatchesContent />
-    </AppLayout>
-  );
+  redirect('/');
 }

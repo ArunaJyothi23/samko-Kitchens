@@ -3,33 +3,27 @@
 import React, { useState } from 'react';
 import { Search, Bell, ChevronDown, MapPin, RefreshCw, Lock, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth, NEW_RESTAURANTS } from '@/contexts/AuthContext';
+import { useAuth, NEW_RESTAURANTS, HotelFilter } from '@/contexts/AuthContext';
 
 interface TopbarProps {
   sidebarCollapsed: boolean;
 }
 
-const locations = [
-  { id: 'loc-all', label: 'All Locations' },
-  { id: 'loc-central', label: 'Central Kitchen' },
-  { id: 'loc-hounslow', label: 'Hounslow' },
-  { id: 'loc-reading', label: 'Reading' },
-  { id: 'loc-dartford', label: 'Dartford' },
-  { id: 'loc-leicester', label: 'Leicester' },
-  ...NEW_RESTAURANTS.map((r) => ({ id: `loc-${r.code.toLowerCase()}`, label: r.name as string })),
+const hotelOptions: { id: HotelFilter; label: string }[] = [
+  { id: 'both', label: 'Both Hotels – Consolidated View' },
+  ...NEW_RESTAURANTS.map((r) => ({ id: r.name as HotelFilter, label: r.name as string })),
 ];
 
 export default function Topbar({ sidebarCollapsed }: TopbarProps) {
   const router = useRouter();
-  const { user, lockedRestaurant, logout } = useAuth();
-  const [selectedLocation, setSelectedLocation] = useState('loc-all');
+  const { user, lockedRestaurant, hotelFilter, setHotelFilter, logout } = useAuth();
   const [locationOpen, setLocationOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
 
   const selectedLabel = lockedRestaurant
-    ? (NEW_RESTAURANTS.some((r) => r.name === lockedRestaurant) ? lockedRestaurant : `Samko ${lockedRestaurant}`)
-    : locations.find((l) => l.id === selectedLocation)?.label ?? 'All Locations';
+    ? lockedRestaurant
+    : hotelOptions.find((l) => l.id === hotelFilter)?.label ?? 'Both Hotels – Consolidated View';
 
   const handleLogout = () => {
     logout();
@@ -38,8 +32,8 @@ export default function Topbar({ sidebarCollapsed }: TopbarProps) {
 
   const notifications = [
     { id: 'notif-001', type: 'alert', message: '3 batches expiring within 24 hours', time: '2m ago' },
-    { id: 'notif-002', type: 'warning', message: 'Dosa batter stock low at Hounslow (1.2 kg)', time: '8m ago' },
-    { id: 'notif-003', type: 'info', message: 'Dispatch #DSP-0041 delivered to Reading', time: '15m ago' },
+    { id: 'notif-002', type: 'warning', message: 'Dosa batter stock low at Stanhill Hotel Limited (1.2 kg)', time: '8m ago' },
+    { id: 'notif-003', type: 'info', message: 'Dispatch #DSP-0041 delivered to Warren House Hotel Limited', time: '15m ago' },
     { id: 'notif-004', type: 'alert', message: 'GRN #GRN-0089 has a quantity discrepancy', time: '23m ago' },
     { id: 'notif-005', type: 'info', message: 'Production batch #PB-2024-0112 completed', time: '41m ago' },
   ];
@@ -69,7 +63,7 @@ export default function Topbar({ sidebarCollapsed }: TopbarProps) {
           <div
             className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"
             style={{ borderColor: 'var(--border)', color: 'var(--foreground)', fontSize: 13, background: 'var(--muted)' }}
-            title="Your account is limited to this restaurant"
+            title="Your account is limited to this hotel"
           >
             <MapPin size={14} style={{ color: 'var(--primary)' }} />
             <span>{selectedLabel}</span>
@@ -96,15 +90,15 @@ export default function Topbar({ sidebarCollapsed }: TopbarProps) {
               boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
             }}
           >
-            {locations.map((loc) => (
+            {hotelOptions.map((loc) => (
               <button
                 key={loc.id}
-                onClick={() => { setSelectedLocation(loc.id); setLocationOpen(false); }}
+                onClick={() => { setHotelFilter(loc.id); setLocationOpen(false); }}
                 className="w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-muted"
                 style={{
                   fontSize: 13,
-                  color: selectedLocation === loc.id ? 'var(--primary)' : 'var(--foreground)',
-                  fontWeight: selectedLocation === loc.id ? 600 : 400,
+                  color: hotelFilter === loc.id ? 'var(--primary)' : 'var(--foreground)',
+                  fontWeight: hotelFilter === loc.id ? 600 : 400,
                 }}
               >
                 {loc.label}

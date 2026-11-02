@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'Samko Kitchens OPS — Food Costing, Inventory & Traceability',
   description:
-    'End-to-end food costing, inventory traceability and kitchen operations management for Samko Kitchens across Hounslow, Reading, Dartford and Leicester.',
+    'End-to-end food costing, inventory traceability and kitchen operations management for Stanhill Hotel Limited and Warren House Hotel Limited.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },

@@ -13,25 +13,10 @@ import {
 } from 'recharts';
 import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
 
-const baseData = [
-  { date: '28 Sep', hounslow: 29.8, reading: 31.2, dartford: 32.1, leicester: 30.4 },
-  { date: '29 Sep', hounslow: 30.2, reading: 30.8, dartford: 31.8, leicester: 31.0 },
-  { date: '30 Sep', hounslow: 31.5, reading: 29.9, dartford: 33.2, leicester: 30.1 },
-  { date: '01 Oct', hounslow: 30.8, reading: 31.4, dartford: 32.8, leicester: 29.8 },
-  { date: '02 Oct', hounslow: 29.4, reading: 30.2, dartford: 31.4, leicester: 31.2 },
-  { date: '03 Oct', hounslow: 28.9, reading: 31.8, dartford: 30.9, leicester: 32.1 },
-  { date: '04 Oct', hounslow: 31.2, reading: 32.4, dartford: 31.6, leicester: 30.8 },
-  { date: '05 Oct', hounslow: 32.1, reading: 31.0, dartford: 33.4, leicester: 29.6 },
-  { date: '06 Oct', hounslow: 30.4, reading: 30.6, dartford: 32.0, leicester: 31.4 },
-  { date: '07 Oct', hounslow: 29.8, reading: 32.2, dartford: 31.2, leicester: 30.9 },
-  { date: '08 Oct', hounslow: 31.8, reading: 31.6, dartford: 34.1, leicester: 31.8 },
-  { date: '09 Oct', hounslow: 32.4, reading: 30.4, dartford: 33.8, leicester: 32.0 },
-  { date: '10 Oct', hounslow: 31.0, reading: 31.2, dartford: 32.6, leicester: 31.1 },
-  { date: '11 Oct', hounslow: 31.4, reading: 31.8, dartford: 33.0, leicester: 30.8 },
-];
+const dates = ['28 Sep', '29 Sep', '30 Sep', '01 Oct', '02 Oct', '03 Oct', '04 Oct', '05 Oct', '06 Oct', '07 Oct', '08 Oct', '09 Oct', '10 Oct', '11 Oct'];
 
-const data: Record<string, string | number>[] = baseData.map((row, i) => {
-  const out: Record<string, string | number> = { ...row };
+const data: Record<string, string | number>[] = dates.map((date, i) => {
+  const out: Record<string, string | number> = { date };
   NEW_RESTAURANTS.forEach((r, idx) => {
     const wobble = (((i * 7 + idx * 5) % 9) - 4) * 0.25;
     out[r.code.toLowerCase()] = Number((r.foodCostPct + wobble).toFixed(1));
@@ -39,13 +24,7 @@ const data: Record<string, string | number>[] = baseData.map((row, i) => {
   return out;
 });
 
-const allSeries = [
-  { key: 'hounslow', color: 'var(--primary)', name: 'Hounslow' },
-  { key: 'reading', color: 'var(--secondary)', name: 'Reading' },
-  { key: 'dartford', color: 'var(--accent)', name: 'Dartford' },
-  { key: 'leicester', color: 'var(--transit)', name: 'Leicester' },
-  ...NEW_RESTAURANTS.map((r) => ({ key: r.code.toLowerCase(), color: r.color, name: r.name as string })),
-];
+const allSeries = NEW_RESTAURANTS.map((r) => ({ key: r.code.toLowerCase(), color: r.color, name: r.name as string }));
 
 const seriesNameByKey: Record<string, string> = Object.fromEntries(allSeries.map((s) => [s.key, s.name]));
 

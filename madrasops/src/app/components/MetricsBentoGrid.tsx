@@ -1,119 +1,213 @@
 'use client';
 
 import React from 'react';
-import { TrendingDown, Package, AlertTriangle, Clock, Truck, FlaskConical, Zap, ArrowUpRight, ArrowDownRight,  } from 'lucide-react';
+import { TrendingDown, Package, AlertTriangle, Clock, Truck, FlaskConical, Zap, ArrowUpRight, ArrowDownRight, ShoppingBag, PoundSterling, Boxes } from 'lucide-react';
 import { useScopedRestaurant, NEW_RESTAURANTS } from '@/contexts/AuthContext';
 
-// Grid plan: 8 cards → grid-cols-4 → row1: hero(2 cols) + 2 regular, row2: 4 regular
-// hero = Food Cost % (North Star), spans 2 cols
+type TrendDir = 'up-bad' | 'up-good' | 'down-good' | 'neutral';
 
-const metrics = [
-  {
-    id: 'metric-food-cost',
-    label: 'Food Cost %',
-    value: '31.4%',
-    subValue: 'Target: 30%',
-    trend: '+1.4pp vs last week',
-    trendDir: 'up-bad',
-    icon: <TrendingDown size={20} />,
-    cardClass: 'metric-card-alert',
-    iconBg: '#FEE2E2',
-    iconColor: '#991B1B',
-    hero: true,
-    note: 'Above target — 4 locations',
-  },
-  {
-    id: 'metric-stock-val',
-    label: 'Total Stock Valuation',
-    value: '£4,821',
-    subValue: 'Across all locations',
-    trend: '+£312 vs yesterday',
-    trendDir: 'up-good',
-    icon: <Package size={18} />,
-    cardClass: 'metric-card',
-    iconBg: '#DBEAFE',
-    iconColor: '#1E40AF',
-    hero: false,
-  },
-  {
-    id: 'metric-epos-sales',
-    label: "Today\'s EPOS Sales",
-    value: '£3,248',
-    subValue: '247 orders processed',
-    trend: '+18% vs yesterday',
-    trendDir: 'up-good',
-    icon: <Zap size={18} />,
-    cardClass: 'metric-card-success',
-    iconBg: '#DCFCE7',
-    iconColor: '#166534',
-    hero: false,
-  },
-  {
-    id: 'metric-wastage',
-    label: 'Wastage Value (Today)',
-    value: '£87.40',
-    subValue: '2.7% of sales',
-    trend: '+£22 vs avg',
-    trendDir: 'up-bad',
-    icon: <AlertTriangle size={18} />,
-    cardClass: 'metric-card-alert',
-    iconBg: '#FEE2E2',
-    iconColor: '#991B1B',
-    hero: false,
-  },
-  {
-    id: 'metric-near-expiry',
-    label: 'Near-Expiry Batches',
-    value: '7',
-    subValue: 'Expiring within 3 days',
-    trend: '3 within 24 hours',
-    trendDir: 'up-bad',
-    icon: <Clock size={18} />,
-    cardClass: 'metric-card-warning',
-    iconBg: '#FEF3C7',
-    iconColor: '#92400E',
-    hero: false,
-  },
-  {
-    id: 'metric-in-transit',
-    label: 'Stock in Transit',
-    value: '£642',
-    subValue: '3 dispatches active',
-    trend: '2 due today',
-    trendDir: 'neutral',
-    icon: <Truck size={18} />,
-    cardClass: 'metric-card-transit',
-    iconBg: '#EDE9FE',
-    iconColor: '#5B21B6',
-    hero: false,
-  },
-  {
-    id: 'metric-production',
-    label: 'Active Production Batches',
-    value: '5',
-    subValue: '2 pending approval',
-    trend: 'Avg yield 94.2%',
-    trendDir: 'neutral',
-    icon: <FlaskConical size={18} />,
-    cardClass: 'metric-card',
-    iconBg: '#DBEAFE',
-    iconColor: '#1E40AF',
-    hero: false,
-  },
-  {
-    id: 'metric-unmapped',
-    label: 'Unmapped EPOS Items',
-    value: '12',
-    subValue: 'Stock not deducted',
-    trend: '3 high-volume items',
-    trendDir: 'up-bad',
-    icon: <AlertTriangle size={18} />,
-    cardClass: 'metric-card-alert',
-    iconBg: '#FEE2E2',
-    iconColor: '#991B1B',
-    hero: false,
-  },
-];
+interface Metric {
+  id: string;
+  label: string;
+  value: string;
+  subValue: string;
+  trend: string;
+  trendDir: TrendDir;
+  icon: React.ReactNode;
+  cardClass: string;
+  iconBg: string;
+  iconColor: string;
+  hero: boolean;
+  note?: string;
+}
+
+const gbp = (n: number) => `£${Math.round(n).toLocaleString('en-GB')}`;
+const gbp2 = (n: number) => `£${n.toFixed(2)}`;
+
+/** Per-hotel daily figures (demo data). Consolidated view = sum of the two hotels. */
+function hotelFigures(scale: number, foodCostPct: number) {
+  const sales = 1248 * scale;
+  const purchases = 520 * scale;
+  const consumption = sales * (foodCostPct / 100);
+  const wastage = 34.2 * scale;
+  const stock = 1842 * scale;
+  return {
+    sales,
+    purchases,
+    consumption,
+    foodCost: consumption,
+    wastage,
+    stock,
+    orders: Math.round(96 * scale),
+    nearExpiry: 3,
+    inTransit: 182 * scale,
+    unmapped: 5,
+    grossProfit: sales - consumption - wastage,
+  };
+}
+
+function buildMetrics(scope: string | null): Metric[] {
+  const hotels = scope ? NEW_RESTAURANTS.filter((r) => r.name === scope) : NEW_RESTAURANTS;
+  const figs = hotels.map((h) => hotelFigures(h.scale, h.foodCostPct));
+  const sum = (k: keyof ReturnType<typeof hotelFigures>) => figs.reduce((s, f) => s + (f[k] as number), 0);
+
+  const sales = sum('sales');
+  const purchases = sum('purchases');
+  const consumption = sum('consumption');
+  const wastage = sum('wastage');
+  const stock = sum('stock');
+  const grossProfit = sum('grossProfit');
+  const orders = sum('orders');
+  const foodCostPct = sales > 0 ? (consumption / sales) * 100 : 0;
+  const label = scope ?? 'Both hotels';
+
+  return [
+    {
+      id: 'metric-food-cost',
+      label: 'Food Cost %',
+      value: `${foodCostPct.toFixed(1)}%`,
+      subValue: `Target: 30% · ${label}`,
+      trend: foodCostPct > 30 ? `+${(foodCostPct - 30).toFixed(1)}pp vs target` : 'Within target',
+      trendDir: foodCostPct > 30 ? 'up-bad' : 'down-good',
+      icon: <TrendingDown size={20} />,
+      cardClass: foodCostPct > 30 ? 'metric-card-alert' : 'metric-card-success',
+      iconBg: foodCostPct > 30 ? '#FEE2E2' : '#DCFCE7',
+      iconColor: foodCostPct > 30 ? '#991B1B' : '#166534',
+      hero: true,
+      note: foodCostPct > 30 ? 'Above target' : 'On target',
+    },
+    {
+      id: 'metric-epos-sales',
+      label: 'Total EPOS Sales',
+      value: gbp(sales),
+      subValue: `${orders} orders processed`,
+      trend: '+14% vs yesterday',
+      trendDir: 'up-good',
+      icon: <Zap size={18} />,
+      cardClass: 'metric-card-success',
+      iconBg: '#DCFCE7',
+      iconColor: '#166534',
+      hero: false,
+    },
+    {
+      id: 'metric-purchases',
+      label: 'Total Purchases',
+      value: gbp(purchases),
+      subValue: 'Goods received & supplier invoices',
+      trend: '+£48 vs avg',
+      trendDir: 'neutral',
+      icon: <ShoppingBag size={18} />,
+      cardClass: 'metric-card',
+      iconBg: '#DBEAFE',
+      iconColor: '#1E40AF',
+      hero: false,
+    },
+    {
+      id: 'metric-food-cost-value',
+      label: 'Food Cost',
+      value: gbp(consumption),
+      subValue: 'Recipe-based consumption cost',
+      trend: `${foodCostPct.toFixed(1)}% of sales`,
+      trendDir: 'neutral',
+      icon: <PoundSterling size={18} />,
+      cardClass: 'metric-card',
+      iconBg: '#FEF3C7',
+      iconColor: '#92400E',
+      hero: false,
+    },
+    {
+      id: 'metric-stock-val',
+      label: 'Inventory Valuation',
+      value: gbp(stock),
+      subValue: `${label} stock`,
+      trend: '+£96 vs yesterday',
+      trendDir: 'up-good',
+      icon: <Package size={18} />,
+      cardClass: 'metric-card',
+      iconBg: '#DBEAFE',
+      iconColor: '#1E40AF',
+      hero: false,
+    },
+    {
+      id: 'metric-consumption',
+      label: 'Stock Consumption',
+      value: gbp(consumption),
+      subValue: 'Deducted via approved recipes',
+      trend: 'FEFO allocation',
+      trendDir: 'neutral',
+      icon: <Boxes size={18} />,
+      cardClass: 'metric-card',
+      iconBg: '#EDE9FE',
+      iconColor: '#5B21B6',
+      hero: false,
+    },
+    {
+      id: 'metric-wastage',
+      label: 'Wastage Value (Today)',
+      value: gbp2(wastage),
+      subValue: `${sales > 0 ? ((wastage / sales) * 100).toFixed(1) : '0.0'}% of sales`,
+      trend: '+£8 vs avg',
+      trendDir: 'up-bad',
+      icon: <AlertTriangle size={18} />,
+      cardClass: 'metric-card-alert',
+      iconBg: '#FEE2E2',
+      iconColor: '#991B1B',
+      hero: false,
+    },
+    {
+      id: 'metric-gross-profit',
+      label: 'Gross Profit',
+      value: gbp(grossProfit),
+      subValue: `${sales > 0 ? ((grossProfit / sales) * 100).toFixed(1) : '0.0'}% margin`,
+      trend: 'Sales − food cost − wastage',
+      trendDir: 'neutral',
+      icon: <PoundSterling size={18} />,
+      cardClass: 'metric-card-success',
+      iconBg: '#DCFCE7',
+      iconColor: '#166534',
+      hero: false,
+    },
+    {
+      id: 'metric-near-expiry',
+      label: 'Near-Expiry Batches',
+      value: String(sum('nearExpiry')),
+      subValue: 'Expiring within 3 days',
+      trend: '2 within 24 hours',
+      trendDir: 'up-bad',
+      icon: <Clock size={18} />,
+      cardClass: 'metric-card-warning',
+      iconBg: '#FEF3C7',
+      iconColor: '#92400E',
+      hero: false,
+    },
+    {
+      id: 'metric-in-transit',
+      label: 'Stock in Transit',
+      value: gbp(sum('inTransit')),
+      subValue: 'Inbound dispatches',
+      trend: 'Due today',
+      trendDir: 'neutral',
+      icon: <Truck size={18} />,
+      cardClass: 'metric-card-transit',
+      iconBg: '#EDE9FE',
+      iconColor: '#5B21B6',
+      hero: false,
+    },
+    {
+      id: 'metric-unmapped',
+      label: 'Unmapped EPOS Items',
+      value: String(sum('unmapped')),
+      subValue: 'Stock not deducted',
+      trend: 'Action required',
+      trendDir: 'up-bad',
+      icon: <FlaskConical size={18} />,
+      cardClass: 'metric-card-alert',
+      iconBg: '#FEE2E2',
+      iconColor: '#991B1B',
+      hero: false,
+    },
+  ];
+}
 
 function TrendChip({ dir, text }: { dir: string; text: string }) {
   if (dir === 'up-bad')
@@ -137,79 +231,11 @@ function TrendChip({ dir, text }: { dir: string; text: string }) {
   return <span style={{ fontSize: 11.5, color: 'var(--muted-foreground)' }}>{text}</span>;
 }
 
-const restaurantMetrics: Record<string, Record<string, { value?: string; subValue?: string; trend?: string; note?: string }>> = {
-  Hounslow: {
-    'metric-food-cost': { value: '31.4%', note: 'Above target' },
-    'metric-stock-val': { value: '£1,842', subValue: 'Hounslow stock', trend: '+£96 vs yesterday' },
-    'metric-epos-sales': { value: '£1,248', subValue: '96 orders processed', trend: '+14% vs yesterday' },
-    'metric-wastage': { value: '£34.20', subValue: '2.7% of sales', trend: '+£8 vs avg' },
-    'metric-near-expiry': { value: '3', trend: '2 within 24 hours' },
-    'metric-in-transit': { value: '£182', subValue: '1 dispatch inbound', trend: '1 due today' },
-    'metric-production': { value: '—', subValue: 'Central kitchen only', trend: 'Not applicable' },
-    'metric-unmapped': { value: '5', trend: '2 high-volume items' },
-  },
-  Reading: {
-    'metric-food-cost': { value: '29.8%', note: 'On target' },
-    'metric-stock-val': { value: '£1,104', subValue: 'Reading stock', trend: '+£64 vs yesterday' },
-    'metric-epos-sales': { value: '£892', subValue: '71 orders processed', trend: '+11% vs yesterday' },
-    'metric-wastage': { value: '£21.80', subValue: '2.4% of sales', trend: '+£3 vs avg' },
-    'metric-near-expiry': { value: '2', trend: '1 within 24 hours' },
-    'metric-in-transit': { value: '£96', subValue: '1 dispatch inbound', trend: '1 due today' },
-    'metric-production': { value: '—', subValue: 'Central kitchen only', trend: 'Not applicable' },
-    'metric-unmapped': { value: '3', trend: '1 high-volume item' },
-  },
-  Dartford: {
-    'metric-food-cost': { value: '33.2%', note: 'Above target' },
-    'metric-stock-val': { value: '£982', subValue: 'Dartford stock', trend: '+£41 vs yesterday' },
-    'metric-epos-sales': { value: '£648', subValue: '49 orders processed', trend: '+9% vs yesterday' },
-    'metric-wastage': { value: '£18.40', subValue: '2.8% of sales', trend: '+£6 vs avg' },
-    'metric-near-expiry': { value: '1', trend: '1 within 24 hours' },
-    'metric-in-transit': { value: '£74', subValue: '1 dispatch inbound', trend: '1 due today' },
-    'metric-production': { value: '—', subValue: 'Central kitchen only', trend: 'Not applicable' },
-    'metric-unmapped': { value: '2', trend: '1 high-volume item' },
-  },
-  Leicester: {
-    'metric-food-cost': { value: '30.1%', note: 'Near target' },
-    'metric-stock-val': { value: '£893', subValue: 'Leicester stock', trend: '+£38 vs yesterday' },
-    'metric-epos-sales': { value: '£460', subValue: '31 orders processed', trend: '+7% vs yesterday' },
-    'metric-wastage': { value: '£13.00', subValue: '2.8% of sales', trend: '+£2 vs avg' },
-    'metric-near-expiry': { value: '1', trend: '0 within 24 hours' },
-    'metric-in-transit': { value: '£58', subValue: '1 dispatch inbound', trend: '1 due today' },
-    'metric-production': { value: '—', subValue: 'Central kitchen only', trend: 'Not applicable' },
-    'metric-unmapped': { value: '2', trend: '1 high-volume item' },
-  },
-  ...Object.fromEntries(
-    NEW_RESTAURANTS.map((r) => {
-      const sales = Math.round(1248 * r.scale);
-      const orders = Math.round(96 * r.scale);
-      const stock = Math.round(1842 * r.scale);
-      const wastage = (34.2 * r.scale).toFixed(2);
-      return [
-        r.name,
-        {
-          'metric-food-cost': { value: `${r.foodCostPct}%`, note: r.foodCostPct > 30 ? 'Above target' : 'On target' },
-          'metric-stock-val': { value: `£${stock.toLocaleString('en-GB')}`, subValue: `${r.name} stock`, trend: `+£${Math.round(96 * r.scale)} vs yesterday` },
-          'metric-epos-sales': { value: `£${sales.toLocaleString('en-GB')}`, subValue: `${orders} orders processed`, trend: '+10% vs yesterday' },
-          'metric-wastage': { value: `£${wastage}`, subValue: '2.6% of sales', trend: `+£${Math.round(6 * r.scale)} vs avg` },
-          'metric-near-expiry': { value: '2', trend: '1 within 24 hours' },
-          'metric-in-transit': { value: `£${Math.round(182 * r.scale)}`, subValue: '1 dispatch inbound', trend: '1 due today' },
-          'metric-production': { value: '—', subValue: 'Central kitchen only', trend: 'Not applicable' },
-          'metric-unmapped': { value: '3', trend: '1 high-volume item' },
-        },
-      ];
-    })
-  ),
-};
-
 export default function MetricsBentoGrid() {
   const scope = useScopedRestaurant();
-  const scoped: typeof metrics = scope
-    ? metrics.map((m) => ({ ...m, ...(restaurantMetrics[scope]?.[m.id] ?? {}) }))
-    : metrics;
+  const scoped = buildMetrics(scope);
   const hero = scoped.find((m) => m.hero)!;
-  const rest = scoped
-    .filter((m) => !m.hero)
-    .filter((m) => !(scope && m.id === 'metric-production'));
+  const rest = scoped.filter((m) => !m.hero);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
@@ -236,14 +262,14 @@ export default function MetricsBentoGrid() {
           <TrendChip dir={hero.trendDir} text={hero.trend} />
           <span
             className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            style={{ background: '#FEE2E2', color: '#991B1B', fontSize: 11 }}
+            style={{ background: hero.iconBg, color: hero.iconColor, fontSize: 11 }}
           >
             {hero.note}
           </span>
         </div>
       </div>
 
-      {/* Remaining 6 cards */}
+      {/* Remaining cards */}
       {rest.map((m) => (
         <div key={m.id} className={`${m.cardClass} flex flex-col justify-between`} style={{ minHeight: 120 }}>
           <div className="flex items-start justify-between">

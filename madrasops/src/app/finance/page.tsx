@@ -13,6 +13,15 @@ import {
   resolveRange, summarise, ExpenseTxn, ExpenseCategory,
 } from './components/financeData';
 
+const MENU_CATEGORY_SPLIT: { name: string; share: number }[] = [
+  { name: 'Mains & Pizzas', share: 0.34 },
+  { name: 'Burgers', share: 0.2 },
+  { name: 'Lite Bites & Small Plates', share: 0.14 },
+  { name: 'Salads, Sandwiches & Deli', share: 0.18 },
+  { name: 'Sides & Desserts', share: 0.08 },
+  { name: 'Hot Drinks', share: 0.06 },
+];
+
 const CAT_COLORS: Record<string, string> = { Payroll: '#6366F1', Utilities: '#0EA5E9', 'Other Operating': '#F9B233', Wastage: '#ED1C24', 'Food COGS': '#168447' };
 
 function Delta({ cur, prev, invert = false }: { cur: number; prev: number; invert?: boolean }) {
@@ -98,12 +107,12 @@ export default function FinancePage() {
         <div>
           <h1 className="page-title">Restaurant Profitability Dashboard</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            Sales, food cost, wastage, expenses and operating profit for {scope ?? (location === 'All' ? 'all locations' : location)}
+            Sales, food cost, wastage, expenses and operating profit for {scope ?? (location === 'All' ? 'both hotels' : location)}
           </p>
         </div>
         {!scope && (
           <select className="input-field" style={{ width: 220 }} value={location} onChange={(e) => setLocation(e.target.value)} aria-label="Restaurant">
-            <option value="All">All locations (consolidated)</option>
+            <option value="All">Both Hotels – Consolidated View</option>
             {ALL_LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
         )}
@@ -209,6 +218,31 @@ export default function FinancePage() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      <div className="card mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <h3 style={{ fontSize: 14, fontWeight: 600 }}>Food Cost by Menu Category</h3>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#92400E', background: '#FEF3C7', padding: '2px 8px', borderRadius: 999 }}>ESTIMATED ALLOCATION (demo)</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead><tr><th>Menu category</th><th>Share of food cost</th><th>Food cost</th><th>% of total net sales</th></tr></thead>
+            <tbody>
+              {MENU_CATEGORY_SPLIT.map((c) => (
+                <tr key={c.name}>
+                  <td style={{ fontSize: 12.5, fontWeight: 600 }}>{c.name}</td>
+                  <td style={{ fontSize: 12 }}>{(c.share * 100).toFixed(0)}%</td>
+                  <td style={{ fontSize: 12, fontWeight: 600 }}>{fmtGBP(s.foodCost * c.share)}</td>
+                  <td style={{ fontSize: 12 }}>{s.netSales > 0 ? ((s.foodCost * c.share / s.netSales) * 100).toFixed(1) : '0.0'}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--muted-foreground)', marginTop: 8, lineHeight: 1.6 }}>
+          Category split is an illustrative allocation of the period food cost. A live build would derive this from EPOS item sales × recipe ingredient costs. Previous period food cost: {fmtGBP(p.foodCost)}.
+        </p>
       </div>
 
       {drill && (

@@ -8,7 +8,7 @@ import { matchesScope, useAuth } from '@/contexts/AuthContext';
 import { QuickPurchase, formatDate, formatDateTime, usePurchaseStore } from '../components/purchaseStore';
 
 export default function QuickPurchaseHistoryPage() {
-  const { lockedRestaurant } = useAuth();
+  const { activeScope: lockedRestaurant } = useAuth();
   const { quickPurchases, hydrated } = usePurchaseStore();
   const [viewing, setViewing] = useState<QuickPurchase | null>(null);
 
@@ -29,7 +29,7 @@ export default function QuickPurchaseHistoryPage() {
             <Receipt size={22} style={{ color: 'var(--primary)' }} /> Quick Purchase History
           </h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            {lockedRestaurant ? `Purchases made for ${lockedRestaurant} only.` : 'Quick purchases across all restaurants.'}
+            {lockedRestaurant ? `Purchases made for ${lockedRestaurant} only.` : 'Quick purchases across both hotels.'}
           </p>
         </div>
         <Link href="/purchase/quick" className="btn-primary" style={{ padding: '8px 14px' }}>

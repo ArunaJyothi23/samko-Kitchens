@@ -1,10 +1,18 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { X } from 'lucide-react';
 import { PurchaseOrder, formatDate, formatDateTime } from './purchaseStore';
+import { useVendorComms } from '@/app/vendor-orders/components/vendorCommsStore';
+import { CommBadge } from '@/app/vendor-orders/components/VendorPoPanel';
 
 export default function OrderDetailPanel({ order, onClose }: { order: PurchaseOrder; onClose: () => void }) {
+  const vc = useVendorComms();
+  const comm = vc.getComm(order.poNumber);
+  const vendor = vc.vendors.find((v) => v.name === order.vendor);
+  const manual = !vendor || vendor.integrationType === 'None (Manual)';
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end" style={{ background: 'rgba(0,0,0,0.4)' }} onClick={onClose}>
       <div
@@ -45,6 +53,38 @@ export default function OrderDetailPanel({ order, onClose }: { order: PurchaseOr
             <span style={{ fontSize: 13, fontWeight: 600 }}>{value}</span>
           </div>
         ))}
+
+        <h3 style={{ fontSize: 13.5, fontWeight: 700, margin: '20px 0 8px' }}>Vendor communication</h3>
+        <div className="card" style={{ padding: 12 }}>
+          <div className="flex justify-between items-center py-1">
+            <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>Communication status</span>
+            <CommBadge status={comm.status} />
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>Method</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{vendor ? vendor.integrationType : 'None (Manual)'}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>Vendor reference</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{comm.externalRef || '—'}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>Vendor-confirmed delivery</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{comm.expectedDelivery ? formatDate(comm.expectedDelivery) : '—'}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>History entries</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600 }}>{comm.events.length}</span>
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--muted-foreground)', margin: '8px 0' }}>
+            {manual
+              ? 'This vendor has no integration — print / send the PO manually as usual.'
+              : 'Vendor acknowledgement never changes stock. Inventory updates only through Receive Order (GRN).'}
+          </p>
+          <Link href="/vendor-orders" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex' }}>
+            Open in Vendor Orders (send, track, history)
+          </Link>
+        </div>
 
         <h3 style={{ fontSize: 13.5, fontWeight: 700, margin: '20px 0 8px' }}>Items</h3>
         <table className="data-table">

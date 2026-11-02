@@ -175,13 +175,18 @@ export default function EPOSOrderDetailPanel({ order, open, onClose }: EPOSOrder
                           {line.menuItem}
                         </span>
                         <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>×{line.quantity}</span>
+                        {line.modifiers && line.modifiers.length > 0 && (
+                          <span style={{ fontSize: 11, color: '#1E40AF', background: '#DBEAFE', borderRadius: 4, padding: '1px 6px' }}>
+                            {line.modifiers.join(', ')}
+                          </span>
+                        )}
                         {line.recipeStatus === 'unmapped' && (
                           <span className="flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold" style={{ background: '#FEE2E2', color: '#991B1B', fontSize: 10 }}>
                             <AlertTriangle size={9} /> No Recipe
                           </span>
                         )}
-                        {line.recipeStatus === 'mapped' && (
-                          <span className="fefo-tag">FEFO Active</span>
+                        {line.recipeStatus === 'mapped' && line.consumption.length > 0 && (
+                          <span className="fefo-tag">Stock Deducted</span>
                         )}
                       </div>
                     </div>
@@ -194,15 +199,15 @@ export default function EPOSOrderDetailPanel({ order, open, onClose }: EPOSOrder
                   {line.recipeStatus === 'unmapped' && (
                     <div className="px-4 py-3" style={{ background: '#FEF2F2' }}>
                       <p style={{ fontSize: 12.5, color: '#991B1B', lineHeight: 1.5 }}>
-                        No active recipe mapped for this menu item. Stock was <strong>not deducted</strong>.
-                        Configure a recipe in Menu &amp; Recipe Mapping to enable automatic inventory deduction.
+                        No approved recipe for this menu item (or its modifiers). Stock was <strong>not deducted</strong>.
+                        Approve the recipe in Recipe Costing to enable automatic inventory deduction.
                       </p>
                       <button
                         className="mt-2 font-semibold"
                         style={{ fontSize: 12, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        onClick={() => toast.info('Opening Menu & Recipe Mapping…')}
+                        onClick={() => { window.location.href = '/recipe-costing'; }}
                       >
-                        Configure Recipe →
+                        Open Recipe Costing →
                       </button>
                     </div>
                   )}

@@ -3,7 +3,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import { ChefHat, Layers, TrendingUp, ShieldCheck } from 'lucide-react';
 
 const stats = [
-  { id: 'stat-locations', value: '4', label: 'Restaurant Locations' },
+  { id: 'stat-locations', value: '2', label: 'Hotel Entities' },
   { id: 'stat-items', value: '107', label: 'Menu Items Tracked' },
   { id: 'stat-batches', value: '1,240+', label: 'Batches Traced' },
   { id: 'stat-compliance', value: '100%', label: 'FEFO Compliance' },
@@ -65,7 +65,7 @@ export default function BrandPanel() {
         </h1>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginTop: 16, lineHeight: 1.6, maxWidth: 360 }}>
           End-to-end food costing, inventory traceability and EPOS consumption tracking
-          across all Samko Kitchens locations.
+          across Stanhill Hotel Limited and Warren House Hotel Limited.
         </p>
 
         {/* Features */}

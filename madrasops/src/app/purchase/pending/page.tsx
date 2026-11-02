@@ -11,7 +11,7 @@ import ReceiveOrderPanel from '../components/ReceiveOrderPanel';
 import OrderDetailPanel from '../components/OrderDetailPanel';
 
 export default function PendingOrdersPage() {
-  const { user, lockedRestaurant } = useAuth();
+  const { user, activeScope: lockedRestaurant } = useAuth();
   const { orders, hydrated } = usePurchaseStore();
   const [search, setSearch] = useState('');
   const [receiving, setReceiving] = useState<PurchaseOrder | null>(null);

@@ -4,6 +4,7 @@ import { imageHosts } from './image-hosts.config.mjs';
 const nextConfig = {
   productionBrowserSourceMaps: true,
   distDir: process.env.DIST_DIR || '.next',
+  allowedDevOrigins: ['*.builtwithrocket.new', 'madrasops1282.builtwithrocket.new'],
 
   typescript: {
     ignoreBuildErrors: true,

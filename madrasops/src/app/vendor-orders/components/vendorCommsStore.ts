@@ -281,7 +281,26 @@ export function useVendorComms() {
     write({ ...cur, vendors: cur.vendors.map((v) => (v.name === name ? { ...v, ...patch } : v)) });
   }, []);
 
-  return { ...state, hydrated, getComm, sendToVendor, recordResponse, reviewChange, cancelPo, updateVendor };
+  /** Records an amendment request. Resets confirmation so the vendor must re-confirm; idempotency key is versioned. */
+  const amendPo = useCallback((poNumber: string, actor: string, note: string) => {
+    mutate(poNumber, (c) => {
+      const version = c.events.filter((e) => e.action.startsWith('Amendment')).length + 1;
+      const wasSent = ['Sent to Vendor', 'Acknowledged', 'Partially Confirmed', 'Confirmed'].includes(c.status);
+      return {
+        ...c,
+        status: wasSent ? 'Ready to Send' : c.status,
+        idempotencyKey: `idem-${poNumber}-amd${version}`,
+        confirmedLines: wasSent ? [] : c.confirmedLines,
+        events: [
+          { id: uid('ev'), at: new Date().toISOString(), action: `Amendment v${version} requested`, actor, method: 'Internal', internalRef: poNumber, externalRef: c.externalRef, result: 'Info', detail: `${note || 'Amendment requested'} — ${wasSent ? 'prior vendor confirmation cleared; re-send required with new idempotency key.' : 'will be included in the first send.'} (simulated)`, retryAttempt: c.retryCount } as CommEvent,
+          ...c.events,
+        ],
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { ...state, hydrated, getComm, sendToVendor, recordResponse, reviewChange, cancelPo, updateVendor, amendPo };
 }
 
 export const COMM_STATUS_STYLE: Record<CommStatus, { bg: string; fg: string }> = {

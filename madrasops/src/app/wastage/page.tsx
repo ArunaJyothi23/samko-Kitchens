@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { Plus, Download, Search, RefreshCw, Trash2 } from 'lucide-react';
 import { useScopedRestaurant, NEW_RESTAURANTS, NEW_RESTAURANT_NAMES } from '@/contexts/AuthContext';
+import { useEposMaster } from '@/data/eposMasterStore';
+
 
 interface WastageRecord {
   id: string;
@@ -22,29 +24,39 @@ interface WastageRecord {
 }
 
 const baseWastageData: WastageRecord[] = [
-  { id: 'W-001', date: '2026-10-11', restaurant: 'Hounslow', ingredient: 'Dosa Batter', batchId: 'BT-2026-280-001', quantity: 0.5, unit: 'kg', costPerUnit: 1.00, totalCost: 0.50, reason: 'Expired Stock', staff: 'Priya S.', status: 'approved', notes: 'Batch expired before use' },
-  { id: 'W-002', date: '2026-10-11', restaurant: 'Hounslow', ingredient: 'Sambar', batchId: 'BT-2026-281-007', quantity: 0.3, unit: 'L', costPerUnit: 5.00, totalCost: 1.50, reason: 'Spillage', staff: 'Ravi K.', status: 'approved', notes: 'Accidental spillage during service' },
-  { id: 'W-003', date: '2026-10-10', restaurant: 'Reading', ingredient: 'Red Chutney', batchId: 'BT-2026-280-005', quantity: 0.2, unit: 'kg', costPerUnit: 10.00, totalCost: 2.00, reason: 'Spoilage', staff: 'Anita M.', status: 'approved', notes: 'Discoloration observed' },
-  { id: 'W-004', date: '2026-10-10', restaurant: 'Dartford', ingredient: 'Idly Batter', batchId: 'BT-2026-281-002', quantity: 1.0, unit: 'kg', costPerUnit: 0.95, totalCost: 0.95, reason: 'Overproduction', staff: 'Kumar R.', status: 'pending', notes: 'Excess batter from morning prep' },
-  { id: 'W-005', date: '2026-10-09', restaurant: 'Leicester', ingredient: 'Potato Masala', batchId: 'BT-2026-280-004', quantity: 0.8, unit: 'kg', costPerUnit: 1.20, totalCost: 0.96, reason: 'Preparation Waste', staff: 'Meena L.', status: 'approved', notes: 'Trimming and prep waste' },
-  { id: 'W-006', date: '2026-10-09', restaurant: 'Hounslow', ingredient: 'Paneer', batchId: 'BT-2026-279-008', quantity: 0.3, unit: 'kg', costPerUnit: 8.50, totalCost: 2.55, reason: 'Burnt / Damaged', staff: 'Priya S.', status: 'approved', notes: 'Overcooked during preparation' },
-  { id: 'W-007', date: '2026-10-08', restaurant: 'Reading', ingredient: 'Vada Batter', batchId: 'BT-2026-279-003', quantity: 0.4, unit: 'kg', costPerUnit: 1.10, totalCost: 0.44, reason: 'Staff Meals', staff: 'Anita M.', status: 'approved', notes: 'Staff meal allocation' },
-  { id: 'W-008', date: '2026-10-08', restaurant: 'Dartford', ingredient: 'Mixed Vegetables', batchId: 'BT-2026-279-009', quantity: 0.6, unit: 'kg', costPerUnit: 2.50, totalCost: 1.50, reason: 'Portioning Variance', staff: 'Kumar R.', status: 'pending', notes: 'Variance from standard portion size' },
+  { id: 'W-001', date: '2026-10-29', restaurant: 'Hounslow', ingredient: 'Cos lettuce', batchId: 'BT-2026-299-004', quantity: 0.5, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Expired Stock', staff: 'Priya S.', status: 'approved', notes: 'Wilted before use' },
+  { id: 'W-002', date: '2026-10-29', restaurant: 'Hounslow', ingredient: 'Tomato sauce', batchId: 'BT-2026-299-021', quantity: 0.3, unit: 'litre', costPerUnit: 0, totalCost: 0, reason: 'Spillage', staff: 'Ravi K.', status: 'approved', notes: 'Accidental spillage during service' },
+  { id: 'W-003', date: '2026-10-28', restaurant: 'Reading', ingredient: 'Chicken breast', batchId: 'BT-2026-298-001', quantity: 0.8, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Expired Stock', staff: 'Anita M.', status: 'approved', notes: 'Past use-by date' },
+  { id: 'W-004', date: '2026-10-28', restaurant: 'Dartford', ingredient: 'Brioche buns', batchId: 'BT-2026-298-002', quantity: 6, unit: 'piece', costPerUnit: 0, totalCost: 0, reason: 'Burnt / Damaged', staff: 'Kumar R.', status: 'pending', notes: 'Crushed in delivery' },
+  { id: 'W-005', date: '2026-10-27', restaurant: 'Leicester', ingredient: 'Cod fillet', batchId: 'BT-2026-297-008', quantity: 0.4, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Preparation Waste', staff: 'Meena L.', status: 'approved', notes: 'Trimming (check recipe yield to avoid double-count)' },
+  { id: 'W-006', date: '2026-10-27', restaurant: 'Hounslow', ingredient: 'Mayonnaise', batchId: 'BT-2026-296-011', quantity: 0.3, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Overproduction', staff: 'Priya S.', status: 'approved', notes: 'Excess garlic mayo' },
+  { id: 'W-007', date: '2026-10-26', restaurant: 'Reading', ingredient: 'Cheddar cheese', batchId: 'BT-2026-295-003', quantity: 1.0, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Staff Meals', staff: 'Anita M.', status: 'approved', notes: 'Staff meal allocation' },
+  { id: 'W-008', date: '2026-10-26', restaurant: 'Dartford', ingredient: 'Mixed vegetables', batchId: 'BT-2026-295-009', quantity: 0.6, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Portioning Variance', staff: 'Kumar R.', status: 'pending', notes: 'Variance from standard portion size' },
 ];
 
 const newWastageData: WastageRecord[] = NEW_RESTAURANTS.flatMap((r, i) => {
   const code = r.code.toLowerCase();
   const staff = `${r.managerName.split(' ')[0]} ${r.managerName.split(' ')[1]?.[0] ?? ''}.`;
   return [
-    { id: `W-${code}-1`, date: '2026-10-11', restaurant: r.name, ingredient: 'Dosa Batter', batchId: 'BT-2026-280-001', quantity: 0.6, unit: 'kg', costPerUnit: 1.0, totalCost: 0.6, reason: 'Expired Stock', staff, status: 'approved' as const, notes: 'Batch expired before use' },
-    { id: `W-${code}-2`, date: '2026-10-10', restaurant: r.name, ingredient: i % 2 === 0 ? 'Sambar' : 'Idly Batter', batchId: 'BT-2026-281-007', quantity: 0.4, unit: i % 2 === 0 ? 'L' : 'kg', costPerUnit: i % 2 === 0 ? 5.0 : 0.95, totalCost: i % 2 === 0 ? 2.0 : 0.38, reason: i % 2 === 0 ? 'Spillage' : 'Overproduction', staff, status: (i % 3 === 0 ? 'pending' : 'approved') as 'pending' | 'approved', notes: 'Recorded during service' },
+    { id: `W-${code}-1`, date: '2026-10-29', restaurant: r.name, ingredient: 'Cos lettuce', batchId: 'BT-2026-299-004', quantity: 0.6, unit: 'kg', costPerUnit: 0, totalCost: 0, reason: 'Expired Stock', staff, status: 'approved' as const, notes: 'Wilted before use' },
+    { id: `W-${code}-2`, date: '2026-10-28', restaurant: r.name, ingredient: i % 2 === 0 ? 'Tomato sauce' : 'Brioche buns', batchId: 'BT-2026-298-007', quantity: i % 2 === 0 ? 0.4 : 4, unit: i % 2 === 0 ? 'litre' : 'piece', costPerUnit: 0, totalCost: 0, reason: i % 2 === 0 ? 'Spillage' : 'Burnt / Damaged', staff, status: (i % 3 === 0 ? 'pending' : 'approved') as 'pending' | 'approved', notes: 'Recorded during service' },
   ];
 });
 
-const allWastageData: WastageRecord[] = [...baseWastageData, ...newWastageData];
+const HOTEL_BY_LEGACY: Record<string, string> = {
+  Hounslow: 'Stanhill Hotel Limited',
+  Leicester: 'Stanhill Hotel Limited',
+  Reading: 'Warren House Hotel Limited',
+  Dartford: 'Warren House Hotel Limited',
+};
+
+const allWastageData: WastageRecord[] = [
+  ...baseWastageData.map((w) => ({ ...w, restaurant: HOTEL_BY_LEGACY[w.restaurant] ?? w.restaurant })),
+  ...newWastageData,
+];
 
 const reasons = ['All', 'Expired Stock', 'Spoilage', 'Overproduction', 'Preparation Waste', 'Burnt / Damaged', 'Spillage', 'Staff Meals', 'Portioning Variance', 'Other'];
-const restaurants = ['All', 'Hounslow', 'Reading', 'Dartford', 'Leicester', ...NEW_RESTAURANT_NAMES];
+const restaurants = ['All', ...NEW_RESTAURANT_NAMES];
 const statuses = ['All', 'approved', 'pending', 'rejected'];
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -55,7 +67,14 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 
 export default function WastagePage() {
   const scope = useScopedRestaurant();
-  const wastageData = scope ? allWastageData.filter((w) => w.restaurant === scope) : allWastageData;
+  const { state: master } = useEposMaster();
+  // Wastage cost is always derived from the latest ingredient purchase cost (qty x cost per unit).
+  const costedAll = allWastageData.map((w) => {
+    const mat = master.materials.find((m) => m.name.toLowerCase() === w.ingredient.toLowerCase());
+    const costPerUnit = mat ? mat.unitCost : w.costPerUnit;
+    return { ...w, costPerUnit, totalCost: Number((w.quantity * costPerUnit).toFixed(2)) };
+  });
+  const wastageData = scope ? costedAll.filter((w) => w.restaurant === scope) : costedAll;
   const [search, setSearch] = useState('');
   const [reasonFilter, setReasonFilter] = useState('All');
   const [restaurantFilter, setRestaurantFilter] = useState('All');
@@ -79,7 +98,7 @@ export default function WastagePage() {
         <div>
           <h1 className="page-title">Wastage</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            {scope ? `Track and manage food wastage at Samko ${scope}` : 'Track and manage food wastage across all locations'}
+            {scope ? `Track and manage food wastage at ${scope}` : 'Track and manage food wastage across both hotels'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -132,45 +151,45 @@ export default function WastagePage() {
 
       {/* Table */}
       <div className="card p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll table-scroll-y">
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Ingredient</th>
-                <th>Batch</th>
-                <th>Quantity</th>
-                <th>Cost</th>
-                <th>Reason</th>
-                <th>Staff</th>
-                <th>Status</th>
-                <th>Notes</th>
+                <th className="col-left nowrap">ID</th>
+                <th className="col-center nowrap">Date</th>
+                <th className="col-left nowrap">Location</th>
+                <th className="col-left col-wide">Ingredient</th>
+                <th className="col-left nowrap">Batch</th>
+                <th className="col-right">Quantity</th>
+                <th className="col-right">Cost</th>
+                <th className="col-left nowrap">Reason</th>
+                <th className="col-left nowrap">Staff</th>
+                <th className="col-center">Status</th>
+                <th className="col-left" style={{ minWidth: 180 }}>Notes</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((w) => (
                 <tr key={w.id}>
-                  <td><span className="font-mono text-xs" style={{ color: 'var(--muted-foreground)' }}>{w.id}</span></td>
-                  <td style={{ fontSize: 12 }}>{w.date}</td>
-                  <td style={{ fontSize: 12 }}>{w.restaurant}</td>
-                  <td style={{ fontSize: 13, fontWeight: 500 }}>{w.ingredient}</td>
-                  <td><span className="font-mono" style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>{w.batchId}</span></td>
-                  <td style={{ fontSize: 12 }}>{w.quantity} {w.unit}</td>
-                  <td style={{ fontSize: 12, fontWeight: 600, color: '#991B1B' }}>£{w.totalCost.toFixed(2)}</td>
-                  <td>
+                  <td className="col-left nowrap"><span className="font-mono text-xs" style={{ color: 'var(--muted-foreground)' }}>{w.id}</span></td>
+                  <td className="col-center nowrap" style={{ fontSize: 12 }}>{w.date}</td>
+                  <td className="col-left nowrap" style={{ fontSize: 12 }}>{w.restaurant}</td>
+                  <td className="col-left col-wide" style={{ fontSize: 13, fontWeight: 500 }}>{w.ingredient}</td>
+                  <td className="col-left nowrap"><span className="font-mono" style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>{w.batchId}</span></td>
+                  <td className="col-right" style={{ fontSize: 12 }}>{w.quantity} {w.unit}</td>
+                  <td className="col-right" style={{ fontSize: 12, fontWeight: 600, color: '#991B1B' }}>£{w.totalCost.toFixed(2)}</td>
+                  <td className="col-left nowrap">
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '2px 7px', borderRadius: 4, background: '#FEE2E2', color: '#991B1B' }}>
                       <Trash2 size={10} />{w.reason}
                     </span>
                   </td>
-                  <td style={{ fontSize: 12 }}>{w.staff}</td>
-                  <td>
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: statusColors[w.status].bg, color: statusColors[w.status].text, textTransform: 'capitalize' }}>
+                  <td className="col-left nowrap" style={{ fontSize: 12 }}>{w.staff}</td>
+                  <td className="col-center">
+                    <span className="table-status" style={{ background: statusColors[w.status].bg, color: statusColors[w.status].text }}>
                       {w.status}
                     </span>
                   </td>
-                  <td style={{ fontSize: 11, color: 'var(--muted-foreground)', maxWidth: 160 }}>{w.notes}</td>
+                  <td className="col-left" style={{ fontSize: 11, color: 'var(--muted-foreground)', minWidth: 180 }}>{w.notes}</td>
                 </tr>
               ))}
             </tbody>
@@ -189,7 +208,7 @@ export default function WastagePage() {
             <div className="space-y-4">
               <div>
                 <label className="label-text block mb-1">Ingredient</label>
-                <select className="input-field w-full"><option>Select ingredient...</option><option>Dosa Batter</option><option>Idly Batter</option><option>Sambar</option></select>
+                <select className="input-field w-full"><option>Select ingredient...</option>{master.materials.filter((m) => !master.inactive.includes(m.sku)).map((m) => <option key={m.sku}>{m.name}</option>)}</select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -198,7 +217,7 @@ export default function WastagePage() {
                 </div>
                 <div>
                   <label className="label-text block mb-1">Unit</label>
-                  <select className="input-field w-full"><option>kg</option><option>L</option><option>units</option></select>
+                  <select className="input-field w-full"><option>kg</option><option>g</option><option>litre</option><option>ml</option><option>piece</option><option>portion</option></select>
                 </div>
               </div>
               <div>

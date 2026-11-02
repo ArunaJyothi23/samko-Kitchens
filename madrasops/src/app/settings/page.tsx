@@ -9,21 +9,20 @@ type SettingsTab = 'general' | 'locations' | 'notifications' | 'security' | 'dat
 
 const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: 'General', icon: <Settings size={15} /> },
-  { id: 'locations', label: 'Locations', icon: <MapPin size={15} /> },
+  { id: 'locations', label: 'Hotel Entities', icon: <MapPin size={15} /> },
   { id: 'notifications', label: 'Notifications', icon: <Bell size={15} /> },
   { id: 'security', label: 'Security', icon: <Shield size={15} /> },
   { id: 'data', label: 'Data & Retention', icon: <Database size={15} /> },
   { id: 'appearance', label: 'Appearance', icon: <Palette size={15} /> },
 ];
 
-const locations = [
-  { id: 'LOC-001', name: 'Samko Kitchens', type: 'Central Kitchen', address: 'Hounslow, London, UK', active: true },
-  { id: 'LOC-002', name: 'Samko Hounslow', type: 'Restaurant', address: 'Hounslow, London, UK', active: true },
-  { id: 'LOC-003', name: 'Samko Reading', type: 'Restaurant', address: 'Reading, Berkshire, UK', active: true },
-  { id: 'LOC-004', name: 'Samko Dartford', type: 'Restaurant', address: 'Dartford, Kent, UK', active: true },
-  { id: 'LOC-005', name: 'Samko Leicester', type: 'Restaurant', address: 'Leicester, Leicestershire, UK', active: true },
-  ...NEW_RESTAURANTS.map((r, i) => ({ id: `LOC-${String(6 + i).padStart(3, '0')}`, name: r.fullName, type: 'Restaurant', address: r.address, active: true })),
-];
+const locations = NEW_RESTAURANTS.map((r, i) => ({
+  id: `HOTEL-${String(1 + i).padStart(3, '0')}`,
+  name: r.fullName,
+  type: 'Hotel',
+  address: `Login: ${r.email}`,
+  active: true,
+}));
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
@@ -40,7 +39,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="page-title">Settings</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            Configure your SaaS application, locations, notifications and preferences
+            Configure your application, hotel entities, notifications and preferences
           </p>
         </div>
         <button
@@ -181,8 +180,8 @@ export default function SettingsPage() {
           {activeTab === 'locations' && (
             <div className="card p-0 overflow-hidden">
               <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 600 }}>Locations</h3>
-                <button className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }}>+ Add Location</button>
+                <h3 style={{ fontSize: 14, fontWeight: 600 }}>Hotel Entities</h3>
+                <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>Only these two hotel entities are active</span>
               </div>
               <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                 {locations.map((loc) => (
@@ -217,7 +216,7 @@ export default function SettingsPage() {
                   { category: 'Financial', items: ['Food cost % exceeds threshold', 'Wastage cost exceeds daily limit', 'Recipe cost variance alert'] },
                 ].map(({ category, items }) => (
                   <div key={category}>
-                    <h4 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 11 }}>{category}</h4>
+                    <h4 style={{ fontSize: 11, fontWeight: 600, marginBottom: 8, color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</h4>
                     <div className="space-y-2">
                       {items.map((item) => (
                         <label key={item} className="flex items-center justify-between py-2 border-b cursor-pointer" style={{ borderColor: 'var(--border)' }}>

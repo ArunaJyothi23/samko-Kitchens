@@ -18,26 +18,14 @@ export const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
 export const DEMO_TODAY = '2026-10-29';
 
 export const ALL_LOCATIONS: string[] = [
-  'Hounslow',
-  'Reading',
-  'Dartford',
-  'Leicester',
   ...NEW_RESTAURANTS.map((r) => r.name as string),
 ];
 
 const LOCATION_SCALE: Record<string, number> = {
-  Hounslow: 1,
-  Reading: 0.76,
-  Dartford: 0.62,
-  Leicester: 0.67,
   ...Object.fromEntries(NEW_RESTAURANTS.map((r) => [r.name, r.scale])),
 };
 
 const LOCATION_FOODCOST: Record<string, number> = {
-  Hounslow: 25,
-  Reading: 27.5,
-  Dartford: 29,
-  Leicester: 28,
   ...Object.fromEntries(NEW_RESTAURANTS.map((r) => [r.name, r.foodCostPct])),
 };
 
@@ -415,15 +403,15 @@ export interface WasteRecord {
 }
 
 const WASTE_ITEMS: { name: string; category: string; unit: string; factor: number; baseUnit: string; costPerBase: number }[] = [
-  { name: 'Dosa Batter', category: 'Batters', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 1.0 },
-  { name: 'Idly Batter', category: 'Batters', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 0.95 },
-  { name: 'Sambar', category: 'Gravies', unit: 'L', factor: 1, baseUnit: 'L', costPerBase: 5.0 },
-  { name: 'Red Chutney', category: 'Chutneys', unit: 'g', factor: 0.001, baseUnit: 'kg', costPerBase: 10.0 },
-  { name: 'Paneer', category: 'Dairy', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 8.5 },
-  { name: 'Sunflower Oil', category: 'Dry Goods', unit: 'ml', factor: 0.001, baseUnit: 'L', costPerBase: 1.7 },
-  { name: 'Coriander', category: 'Vegetables', unit: 'bunch', factor: 1, baseUnit: 'bunch', costPerBase: 0.8 },
-  { name: 'Mixed Vegetables', category: 'Vegetables', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 2.5 },
-  { name: 'Takeaway Containers', category: 'Packaging', unit: 'pack', factor: 1, baseUnit: 'pack', costPerBase: 6.5 },
+  { name: 'Chicken breast', category: 'Meat & Poultry', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 6.5 },
+  { name: 'Cos lettuce', category: 'Vegetables & Fresh Produce', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 3.2 },
+  { name: 'Tomato sauce', category: 'Dry Goods & Groceries', unit: 'litre', factor: 1, baseUnit: 'litre', costPerBase: 2.8 },
+  { name: 'Mayonnaise', category: 'Dairy & Eggs', unit: 'g', factor: 0.001, baseUnit: 'kg', costPerBase: 4.0 },
+  { name: 'Cheddar cheese', category: 'Dairy & Eggs', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 8.5 },
+  { name: 'Cooking oil', category: 'Dry Goods & Groceries', unit: 'ml', factor: 0.001, baseUnit: 'litre', costPerBase: 1.7 },
+  { name: 'Parsley', category: 'Vegetables & Fresh Produce', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 9.0 },
+  { name: 'Mixed vegetables', category: 'Dry Goods & Groceries', unit: 'kg', factor: 1, baseUnit: 'kg', costPerBase: 2.5 },
+  { name: 'Brioche buns', category: 'Bakery & Bread', unit: 'piece', factor: 1, baseUnit: 'piece', costPerBase: 0.45 },
 ];
 
 const WASTE_REASONS = ['Expired Stock', 'Spoilage', 'Overproduction', 'Preparation Waste', 'Spillage', 'Burnt / Damaged', 'Staff Meals'];

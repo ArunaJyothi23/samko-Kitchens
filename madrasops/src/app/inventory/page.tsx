@@ -27,38 +27,48 @@ interface InventoryItem {
 }
 
 const baseInventoryData: InventoryItem[] = [
-  { id: 'inv-1', sku: 'MF-DB-001', name: 'Dosa Batter', category: 'Batters', restaurant: 'Hounslow', available: 4.2, reserved: 0.5, quarantined: 0, unit: 'kg', costPerUnit: 1.00, totalValue: 4.70, minStock: 2, maxStock: 20, expiryDate: '2026-10-14', batchId: 'BT-2026-283-001', status: 'healthy' },
-  { id: 'inv-2', sku: 'MF-IB-001', name: 'Idly Batter', category: 'Batters', restaurant: 'Hounslow', available: 8.5, reserved: 1.0, quarantined: 0, unit: 'kg', costPerUnit: 0.95, totalValue: 9.03, minStock: 3, maxStock: 15, expiryDate: '2026-10-15', batchId: 'BT-2026-283-002', status: 'healthy' },
-  { id: 'inv-3', sku: 'MF-VB-001', name: 'Vada Batter', category: 'Batters', restaurant: 'Hounslow', available: 1.2, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 1.10, totalValue: 1.32, minStock: 2, maxStock: 10, expiryDate: '2026-10-13', batchId: 'BT-2026-283-003', status: 'low' },
-  { id: 'inv-4', sku: 'MF-PM-001', name: 'Potato Masala', category: 'Masalas', restaurant: 'Hounslow', available: 2.8, reserved: 0.3, quarantined: 0, unit: 'kg', costPerUnit: 1.20, totalValue: 3.72, minStock: 1, maxStock: 8, expiryDate: '2026-10-12', batchId: 'BT-2026-283-004', status: 'healthy' },
-  { id: 'inv-5', sku: 'MF-RC-001', name: 'Red Chutney', category: 'Chutneys', restaurant: 'Hounslow', available: 0.3, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 10.00, totalValue: 3.00, minStock: 0.5, maxStock: 3, expiryDate: '2026-10-12', batchId: 'BT-2026-283-005', status: 'critical' },
-  { id: 'inv-6', sku: 'MF-WC-001', name: 'White Chutney', category: 'Chutneys', restaurant: 'Hounslow', available: 0.4, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 10.00, totalValue: 4.00, minStock: 0.5, maxStock: 3, expiryDate: '2026-10-13', batchId: 'BT-2026-283-006', status: 'low' },
-  { id: 'inv-7', sku: 'MF-SB-001', name: 'Sambar', category: 'Gravies', restaurant: 'Hounslow', available: 0.8, reserved: 0.1, quarantined: 0, unit: 'L', costPerUnit: 5.00, totalValue: 4.50, minStock: 1, maxStock: 10, expiryDate: '2026-10-14', batchId: 'BT-2026-283-007', status: 'low' },
-  { id: 'inv-8', sku: 'MF-PN-001', name: 'Paneer', category: 'Dairy', restaurant: 'Reading', available: 1.5, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 8.50, totalValue: 12.75, minStock: 1, maxStock: 5, expiryDate: '2026-10-16', batchId: 'BT-2026-283-008', status: 'healthy' },
-  { id: 'inv-9', sku: 'MF-MV-001', name: 'Mixed Vegetables', category: 'Vegetables', restaurant: 'Reading', available: 4.0, reserved: 0.5, quarantined: 0, unit: 'kg', costPerUnit: 2.50, totalValue: 11.25, minStock: 2, maxStock: 10, expiryDate: '2026-10-15', batchId: 'BT-2026-283-009', status: 'healthy' },
-  { id: 'inv-10', sku: 'MF-CR-001', name: 'Cooked Rice', category: 'Grains', restaurant: 'Dartford', available: 3.5, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 1.80, totalValue: 6.30, minStock: 2, maxStock: 12, expiryDate: '2026-10-11', batchId: 'BT-2026-282-010', status: 'expired' },
-  { id: 'inv-11', sku: 'MF-CB-001', name: 'Curry Base', category: 'Gravies', restaurant: 'Leicester', available: 4.5, reserved: 0.5, quarantined: 0, unit: 'kg', costPerUnit: 3.20, totalValue: 16.00, minStock: 2, maxStock: 10, expiryDate: '2026-10-18', batchId: 'BT-2026-283-011', status: 'healthy' },
-  { id: 'inv-12', sku: 'MF-GH-001', name: 'Ghee', category: 'Dairy', restaurant: 'Leicester', available: 0.8, reserved: 0, quarantined: 0.2, unit: 'kg', costPerUnit: 12.00, totalValue: 12.00, minStock: 0.5, maxStock: 3, expiryDate: '2026-11-01', batchId: 'BT-2026-280-012', status: 'healthy' },
+  { id: 'inv-1', sku: 'RM-MP-001', name: 'Chicken breast', category: 'Meat & Poultry', restaurant: 'Hounslow', available: 12.5, reserved: 1.5, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 5, maxStock: 30, expiryDate: '2026-11-04', batchId: 'BT-2026-304-001', status: 'healthy' },
+  { id: 'inv-2', sku: 'RM-BB-001', name: 'Brioche buns', category: 'Bakery & Bread', restaurant: 'Hounslow', available: 48, reserved: 6, quarantined: 0, unit: 'piece', costPerUnit: 0, totalValue: 0, minStock: 30, maxStock: 120, expiryDate: '2026-11-03', batchId: 'BT-2026-304-002', status: 'healthy' },
+  { id: 'inv-3', sku: 'RM-DE-002', name: 'Cheddar cheese', category: 'Dairy & Eggs', restaurant: 'Hounslow', available: 1.8, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 3, maxStock: 15, expiryDate: '2026-11-20', batchId: 'BT-2026-304-003', status: 'low' },
+  { id: 'inv-4', sku: 'RM-VG-008', name: 'Cos lettuce', category: 'Vegetables & Fresh Produce', restaurant: 'Hounslow', available: 0.8, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 2, maxStock: 8, expiryDate: '2026-11-02', batchId: 'BT-2026-304-004', status: 'critical' },
+  { id: 'inv-5', sku: 'RM-DG-025', name: 'Cooking oil', category: 'Dry Goods & Groceries', restaurant: 'Hounslow', available: 18, reserved: 0, quarantined: 0, unit: 'litre', costPerUnit: 0, totalValue: 0, minStock: 10, maxStock: 40, expiryDate: '2027-02-01', batchId: 'BT-2026-290-005', status: 'healthy' },
+  { id: 'inv-6', sku: 'RM-BB-006', name: 'Pizza bases', category: 'Bakery & Bread', restaurant: 'Reading', available: 36, reserved: 4, quarantined: 0, unit: 'piece', costPerUnit: 0, totalValue: 0, minStock: 20, maxStock: 80, expiryDate: '2026-11-05', batchId: 'BT-2026-304-006', status: 'healthy' },
+  { id: 'inv-7', sku: 'RM-DE-001', name: 'Fior Di Latte mozzarella', category: 'Dairy & Eggs', restaurant: 'Reading', available: 3.2, reserved: 0.4, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 2, maxStock: 12, expiryDate: '2026-11-08', batchId: 'BT-2026-304-007', status: 'healthy' },
+  { id: 'inv-8', sku: 'RM-FS-001', name: 'Cod fillet', category: 'Fish & Seafood', restaurant: 'Dartford', available: 4.5, reserved: 0.5, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 3, maxStock: 15, expiryDate: '2026-11-02', batchId: 'BT-2026-304-008', status: 'healthy' },
+  { id: 'inv-9', sku: 'RM-DS-004', name: 'Ice cream – Vanilla', category: 'Dessert Ingredients', restaurant: 'Dartford', available: 0.5, reserved: 0, quarantined: 0, unit: 'litre', costPerUnit: 0, totalValue: 0, minStock: 2, maxStock: 10, expiryDate: '2027-01-15', batchId: 'BT-2026-290-009', status: 'critical' },
+  { id: 'inv-10', sku: 'RM-DE-010', name: 'Eggs', category: 'Dairy & Eggs', restaurant: 'Leicester', available: 90, reserved: 0, quarantined: 0, unit: 'piece', costPerUnit: 0, totalValue: 0, minStock: 60, maxStock: 300, expiryDate: '2026-10-30', batchId: 'BT-2026-299-010', status: 'expired' },
+  { id: 'inv-11', sku: 'RM-BV-001', name: 'Coffee beans', category: 'Beverages & Hot Drinks', restaurant: 'Leicester', available: 4.0, reserved: 0, quarantined: 0, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 2, maxStock: 10, expiryDate: '2027-03-01', batchId: 'BT-2026-290-011', status: 'healthy' },
+  { id: 'inv-12', sku: 'RM-MP-004', name: 'Beef steak', category: 'Meat & Poultry', restaurant: 'Leicester', available: 6.0, reserved: 0, quarantined: 0.5, unit: 'kg', costPerUnit: 0, totalValue: 0, minStock: 4, maxStock: 20, expiryDate: '2026-11-03', batchId: 'BT-2026-304-012', status: 'healthy' },
 ];
 
 const newInventoryData: InventoryItem[] = NEW_RESTAURANTS.flatMap((r, i) => {
   const code = r.code;
-  const mk = (n: number, sku: string, name: string, category: string, unit: string, costPerUnit: number, base: number, minStock: number, maxStock: number, expiryDate: string, status: InventoryItem['status']): InventoryItem => {
+  const mk = (n: number, sku: string, name: string, category: string, unit: string, base: number, minStock: number, maxStock: number, expiryDate: string, status: InventoryItem['status']): InventoryItem => {
     const available = Number((base * r.scale).toFixed(1));
-    return { id: `inv-${code.toLowerCase()}-${n}`, sku, name, category, restaurant: r.name, available, reserved: Number((available * 0.1).toFixed(1)), quarantined: 0, unit, costPerUnit, totalValue: Number((available * costPerUnit).toFixed(2)), minStock, maxStock, expiryDate, batchId: `BT-2026-283-${code}${n}`, status };
+    return { id: `inv-${code.toLowerCase()}-${n}`, sku, name, category, restaurant: r.name, available, reserved: Number((available * 0.1).toFixed(1)), quarantined: 0, unit, costPerUnit: 0, totalValue: 0, minStock, maxStock, expiryDate, batchId: `BT-2026-304-${code}${n}`, status };
   };
   return [
-    mk(1, 'MF-DB-001', 'Dosa Batter', 'Batters', 'kg', 1.0, 6.0, 2, 20, '2026-10-14', 'healthy'),
-    mk(2, 'MF-IB-001', 'Idly Batter', 'Batters', 'kg', 0.95, 7.5, 3, 15, '2026-10-15', 'healthy'),
-    mk(3, 'MF-SB-001', 'Sambar', 'Gravies', 'L', 5.0, i % 2 === 0 ? 1.2 : 4.5, 1, 10, '2026-10-14', i % 2 === 0 ? 'low' : 'healthy'),
-    mk(4, 'MF-RC-001', 'Red Chutney', 'Chutneys', 'kg', 10.0, i % 3 === 0 ? 0.5 : 1.6, 0.5, 3, '2026-10-12', i % 3 === 0 ? 'critical' : 'healthy'),
+    mk(1, 'RM-MP-001', 'Chicken breast', 'Meat & Poultry', 'kg', 10.0, 5, 30, '2026-11-04', 'healthy'),
+    mk(2, 'RM-BB-001', 'Brioche buns', 'Bakery & Bread', 'piece', 40, 30, 120, '2026-11-03', 'healthy'),
+    mk(3, 'RM-DE-002', 'Cheddar cheese', 'Dairy & Eggs', 'kg', i % 2 === 0 ? 1.5 : 6.0, 3, 15, '2026-11-20', i % 2 === 0 ? 'low' : 'healthy'),
+    mk(4, 'RM-VG-008', 'Cos lettuce', 'Vegetables & Fresh Produce', 'kg', i % 3 === 0 ? 0.8 : 4.0, 2, 8, '2026-11-02', i % 3 === 0 ? 'critical' : 'healthy'),
   ];
 });
 
-const allInventoryData: InventoryItem[] = [...baseInventoryData, ...newInventoryData];
+const HOTEL_BY_LEGACY: Record<string, string> = {
+  Hounslow: 'Stanhill Hotel Limited',
+  Leicester: 'Stanhill Hotel Limited',
+  Reading: 'Warren House Hotel Limited',
+  Dartford: 'Warren House Hotel Limited',
+};
 
-const categories = ['All', 'Batters', 'Masalas', 'Chutneys', 'Gravies', 'Dairy', 'Vegetables', 'Grains'];
-const restaurants = ['All', 'Hounslow', 'Reading', 'Dartford', 'Leicester', ...NEW_RESTAURANT_NAMES];
+const allInventoryData: InventoryItem[] = [
+  ...baseInventoryData.map((i) => ({ ...i, restaurant: HOTEL_BY_LEGACY[i.restaurant] ?? i.restaurant })),
+  ...newInventoryData,
+];
+
+const categories = ['All', 'Meat & Poultry', 'Fish & Seafood', 'Vegetables & Fresh Produce', 'Dairy & Eggs', 'Bakery & Bread', 'Dry Goods & Groceries', 'Dessert Ingredients', 'Beverages & Hot Drinks'];
+const restaurants = ['All', ...NEW_RESTAURANT_NAMES];
 const statusOptions = ['All', 'healthy', 'low', 'critical', 'expired'];
 
 const statusColors: Record<string, string> = {
@@ -95,7 +105,7 @@ export default function InventoryPage() {
         <div>
           <h1 className="page-title">Inventory</h1>
           <p style={{ fontSize: 13.5, color: 'var(--muted-foreground)', marginTop: 4 }}>
-            {scope ? `Real-time stock levels at Samko ${scope}` : 'Real-time stock levels across all restaurant locations'}
+            {scope ? `Real-time stock levels at ${scope}` : 'Real-time stock levels across both hotels'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -155,45 +165,45 @@ export default function InventoryPage() {
 
       {/* Table */}
       <div className="card p-0 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="table-scroll table-scroll-y">
           <table className="data-table">
             <thead>
               <tr>
-                <th>SKU</th>
-                <th>Ingredient</th>
-                <th>Category</th>
-                <th>Location</th>
-                <th>Available</th>
-                <th>Reserved</th>
-                <th>Quarantined</th>
-                <th>Cost/Unit</th>
-                <th>Total Value</th>
-                <th>Expiry</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th className="col-left nowrap">SKU</th>
+                <th className="col-left col-wide">Ingredient</th>
+                <th className="col-left nowrap">Category</th>
+                <th className="col-left nowrap">Hotel</th>
+                <th className="col-right">Available</th>
+                <th className="col-right">Reserved</th>
+                <th className="col-right">Quarantined</th>
+                <th className="col-right">Cost/Unit</th>
+                <th className="col-right">Total Value</th>
+                <th className="col-center nowrap">Expiry</th>
+                <th className="col-center">Status</th>
+                <th className="col-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((item) => (
                 <tr key={item.id} className={selectedItem?.id === item.id ? 'selected' : ''}>
-                  <td><span className="font-mono text-xs" style={{ color: 'var(--muted-foreground)' }}>{item.sku}</span></td>
-                  <td>
+                  <td className="col-left nowrap"><span className="font-mono text-xs" style={{ color: 'var(--muted-foreground)' }}>{item.sku}</span></td>
+                  <td className="col-left col-wide">
                     <div className="font-medium" style={{ fontSize: 13 }}>{item.name}</div>
                     <div style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>{item.batchId}</div>
                   </td>
-                  <td style={{ fontSize: 12 }}>{item.category}</td>
-                  <td style={{ fontSize: 12 }}>{item.restaurant}</td>
-                  <td>
+                  <td className="col-left nowrap" style={{ fontSize: 12 }}>{item.category}</td>
+                  <td className="col-left nowrap" style={{ fontSize: 12 }}>{item.restaurant}</td>
+                  <td className="col-right">
                     <span className="font-semibold" style={{ fontSize: 13, color: item.available < item.minStock ? '#991B1B' : '#166534' }}>
                       {item.available} {item.unit}
                     </span>
                   </td>
-                  <td style={{ fontSize: 12 }}>{item.reserved} {item.unit}</td>
-                  <td style={{ fontSize: 12, color: item.quarantined > 0 ? '#92400E' : 'var(--muted-foreground)' }}>{item.quarantined} {item.unit}</td>
-                  <td style={{ fontSize: 12 }}>£{item.costPerUnit.toFixed(2)}/{item.unit}</td>
-                  <td style={{ fontSize: 12, fontWeight: 600 }}>£{item.totalValue.toFixed(2)}</td>
-                  <td style={{ fontSize: 11, color: item.status === 'expired' ? '#991B1B' : 'var(--muted-foreground)' }}>{item.expiryDate}</td>
-                  <td>
+                  <td className="col-right" style={{ fontSize: 12 }}>{item.reserved} {item.unit}</td>
+                  <td className="col-right" style={{ fontSize: 12, color: item.quarantined > 0 ? '#92400E' : 'var(--muted-foreground)' }}>{item.quarantined} {item.unit}</td>
+                  <td className="col-right" style={{ fontSize: 12 }}>£{item.costPerUnit.toFixed(2)}/{item.unit}</td>
+                  <td className="col-right" style={{ fontSize: 12, fontWeight: 600 }}>£{item.totalValue.toFixed(2)}</td>
+                  <td className="col-center nowrap" style={{ fontSize: 11, color: item.status === 'expired' ? '#991B1B' : 'var(--muted-foreground)' }}>{item.expiryDate}</td>
+                  <td className="col-center">
                     <span style={{
                       display: 'inline-block',
                       padding: '2px 8px',
@@ -241,7 +251,7 @@ export default function InventoryPage() {
                 ['SKU', selectedItem.sku],
                 ['Batch ID', selectedItem.batchId],
                 ['Category', selectedItem.category],
-                ['Location', selectedItem.restaurant],
+                ['Hotel', selectedItem.restaurant],
                 ['Available', `${selectedItem.available} ${selectedItem.unit}`],
                 ['Reserved', `${selectedItem.reserved} ${selectedItem.unit}`],
                 ['Quarantined', `${selectedItem.quarantined} ${selectedItem.unit}`],
